@@ -22,6 +22,7 @@ export function Board() {
   const vp = useBoardStore((s) => s.board.viewport);
   const setViewport = useBoardStore((s) => s.setViewport);
   const spaceHeld = useUiStore((s) => s.spaceHeld);
+  const animating = useUiStore((s) => s.animateViewport);
 
   // Wheel zoom must be a non-passive native listener so preventDefault works.
   useEffect(() => {
@@ -152,7 +153,7 @@ export function Board() {
       onPointerCancelCapture={pinch.onPointerUpCapture}
       onDoubleClick={onDoubleClick}
     >
-      <div className="board-content" style={{ transform: `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})` }}>
+      <div className={'board-content' + (animating ? ' animating' : '')} style={{ transform: `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})` }}>
         {zones.map((z) => <Zone key={z.id} zone={z} />)}
         {cards.map((c) => <Card key={c.id} card={c} />)}
       </div>

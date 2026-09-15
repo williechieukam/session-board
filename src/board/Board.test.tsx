@@ -254,3 +254,12 @@ test('shows the empty-board hint only when there are no notes and no zones', () 
   act(() => { useBoardStore.getState().addZone({ x: 0, y: 0 }); });
   expect(screen.queryByTestId('empty-hint')).toBeNull();
 });
+
+test('board content animates only while a programmatic viewport change runs', () => {
+  const { container } = render(<Board />);
+  const content = container.querySelector('.board-content')!;
+  expect(content).not.toHaveClass('animating');
+  act(() => useUiStore.setState({ animateViewport: true }));
+  expect(content).toHaveClass('animating');
+  act(() => useUiStore.setState({ animateViewport: false }));
+});

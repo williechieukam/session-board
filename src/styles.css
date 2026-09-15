@@ -214,3 +214,7 @@ button, input, textarea { font: inherit; color: inherit; }
   .session-bar { top: 70px; }
   .zoom-cluster { bottom: 76px; }
 }
+
+/* ===== Present-mode viewport animation ===== */
+.board-content.animating { transition: transform 320ms var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { .board-content.animating { transition: none; } }

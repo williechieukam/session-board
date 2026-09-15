@@ -7,8 +7,10 @@ import { ZoomCluster } from './chrome/ZoomCluster';
 import { Toast } from './ui/Toast';
 import { useBoardStore } from './store/boardStore';
 import { readBackup, startBackup } from './store/backup';
+import { usePresentMode } from './board/usePresentMode';
 
 export function App() {
+  usePresentMode();
   useEffect(() => {
     const backup = readBackup();
     if (backup) useBoardStore.getState().loadBoard(backup);
