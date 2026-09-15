@@ -120,3 +120,31 @@ test('resize clamps to minimum size', () => {
   fireEvent.pointerUp(window, { clientX: 0, clientY: 0, pointerId: 1 });
   expect(useBoardStore.getState().board.cards[0]).toMatchObject({ width: 80, height: 60 });
 });
+
+test('double-click edits; blur commits once', () => {
+  const a = createCard({ x: 0, y: 0, text: 'old' }, 1);
+  useBoardStore.setState((s) => ({ board: { ...s.board, cards: [a] } }));
+  render(<Card card={a} />);
+  fireEvent.doubleClick(screen.getByTestId('card'));
+  expect(useUiStore.getState().editingId).toBe(a.id);
+  const ta = screen.getByRole('textbox') as HTMLTextAreaElement;
+  expect(ta.value).toBe('old');
+  fireEvent.change(ta, { target: { value: 'new text' } });
+  expect(useBoardStore.getState().history.past).toHaveLength(0);
+  fireEvent.blur(ta);
+  expect(useBoardStore.getState().board.cards[0].text).toBe('new text');
+  expect(useBoardStore.getState().history.past).toHaveLength(1);
+  expect(useUiStore.getState().editingId).toBeNull();
+});
+
+test('escape commits and leaves editing', () => {
+  const a = createCard({ x: 0, y: 0 }, 1);
+  useBoardStore.setState((s) => ({ board: { ...s.board, cards: [a] } }));
+  useUiStore.setState({ editingId: a.id });
+  render(<Card card={a} />);
+  const ta = screen.getByRole('textbox');
+  fireEvent.change(ta, { target: { value: 'x' } });
+  fireEvent.keyDown(ta, { key: 'Escape' });
+  expect(useBoardStore.getState().board.cards[0].text).toBe('x');
+  expect(useUiStore.getState().editingId).toBeNull();
+});

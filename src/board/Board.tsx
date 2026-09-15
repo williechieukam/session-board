@@ -5,6 +5,7 @@ import { useBoardStore } from '../store/boardStore';
 import { zoomAround } from './coords';
 import { useDrag } from './useDrag';
 import { Card } from './Card';
+import { boardContainer, clientToBoard, createCardCentredAt } from './actions';
 
 function isTextTarget(t: EventTarget | null): boolean {
   return t instanceof HTMLElement && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
@@ -33,6 +34,11 @@ export function Board() {
   }, [setViewport]);
 
   useEffect(() => {
+    boardContainer.el = containerRef.current;
+    return () => { boardContainer.el = null; };
+  }, []);
+
+  useEffect(() => {
     const down = (e: KeyboardEvent) => { if (e.code === 'Space' && !isTextTarget(e.target)) { e.preventDefault(); setSpaceHeld(true); } };
     const up = (e: KeyboardEvent) => { if (e.code === 'Space') setSpaceHeld(false); };
     window.addEventListener('keydown', down);
@@ -55,12 +61,19 @@ export function Board() {
     // Rubber-band selection is added in Task 13.
   };
 
+  const onDoubleClick = (e: React.MouseEvent) => {
+    const t = e.target as HTMLElement;
+    if (t !== e.currentTarget && !t.classList.contains('board-content')) return;
+    createCardCentredAt(clientToBoard(e.currentTarget as HTMLElement, e.clientX, e.clientY, useBoardStore.getState().board.viewport));
+  };
+
   return (
     <div
       ref={containerRef}
       className={'board' + (spaceHeld ? ' panning' : '')}
       data-testid="board"
       onPointerDown={onPointerDown}
+      onDoubleClick={onDoubleClick}
     >
       <div className="board-content" style={{ transform: `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})` }}>
         {cards.map((c) => <Card key={c.id} card={c} />)}

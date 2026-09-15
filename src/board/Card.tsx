@@ -9,6 +9,7 @@ import { useDrag } from './useDrag';
 export function Card({ card }: { card: CardModel }) {
   const selected = useBoardStore((s) => s.selection.includes(card.id));
   const offset = useUiStore((s) => (s.dragOffset && s.dragOffset.ids.includes(card.id) ? s.dragOffset : null));
+  const editing = useUiStore((s) => s.editingId === card.id);
   const palette = CARD_PALETTE[card.color];
   const x = card.x + (offset?.dx ?? 0);
   const y = card.y + (offset?.dy ?? 0);
@@ -73,8 +74,14 @@ export function Card({ card }: { card: CardModel }) {
     onCancel: () => setResizeRect(null),
   });
 
+  const commitText = (value: string) => {
+    useBoardStore.getState().updateCardText(card.id, value);
+    useUiStore.getState().setEditing(null);
+  };
+
   const onPointerDown = (e: React.PointerEvent) => {
     e.stopPropagation();
+    if (editing) return;
     onDragDown(e);
   };
 
@@ -90,8 +97,20 @@ export function Card({ card }: { card: CardModel }) {
         zIndex: card.zIndex, background: palette.bg, borderColor: palette.border,
       }}
       onPointerDown={onPointerDown}
+      onDoubleClick={() => useUiStore.getState().setEditing(card.id)}
     >
-      <div className="card-text">{card.text}</div>
+      {editing ? (
+        <textarea
+          className="card-editor"
+          autoFocus
+          defaultValue={card.text}
+          onPointerDown={(e) => e.stopPropagation()}
+          onBlur={(e) => commitText(e.currentTarget.value)}
+          onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); commitText(e.currentTarget.value); } }}
+        />
+      ) : (
+        <div className="card-text">{card.text}</div>
+      )}
       {card.votes > 0 && (
         <div className="card-votes">
           {Array.from({ length: dots }, (_, i) => <span key={i} className="vote-dot" />)}
