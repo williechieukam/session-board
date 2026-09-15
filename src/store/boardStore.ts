@@ -136,8 +136,12 @@ export const useBoardStore = create<BoardState>()((set, get) => {
     deleteItems(ids) {
       const set_ = new Set(ids);
       mutate((b) => {
-        b.cards = b.cards.filter((c) => !set_.has(c.id));
-        b.zones = b.zones.filter((z) => !set_.has(z.id));
+        const newCards = b.cards.filter((c) => !set_.has(c.id));
+        const newZones = b.zones.filter((z) => !set_.has(z.id));
+        if (newCards.length !== b.cards.length || newZones.length !== b.zones.length) {
+          b.cards = newCards;
+          b.zones = newZones;
+        }
       });
       set((s) => ({ selection: s.selection.filter((id) => !set_.has(id)) }));
     },

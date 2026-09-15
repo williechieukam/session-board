@@ -89,6 +89,16 @@ test('a no-op action does not create an undo entry', () => {
   expect(store().history.past.length).toBe(before);
 });
 
+test('deleteItems does not record history when nothing matches', () => {
+  store().addCard({ x: 0, y: 0 });
+  store().markClean();
+  const before = store().history.past.length;
+  store().deleteItems(['does-not-exist']);
+  store().deleteItems([]);
+  expect(store().history.past.length).toBe(before);
+  expect(store().dirty).toBe(false);
+});
+
 test('markClean clears dirty', () => {
   store().addCard({ x: 0, y: 0 });
   store().markClean();
