@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import type React from 'react';
 import { CARD_MIN_SIZE, type Rect, type Card as CardModel } from '../model/types';
 import { CARD_PALETTE } from '../model/palette';
@@ -6,7 +6,7 @@ import { useBoardStore } from '../store/boardStore';
 import { useUiStore, wantsPan } from '../store/uiStore';
 import { useDrag } from './useDrag';
 
-export function Card({ card }: { card: CardModel }) {
+function CardView({ card }: { card: CardModel }) {
   const selected = useBoardStore((s) => s.selection.includes(card.id));
   const offset = useUiStore((s) => (s.dragOffset && s.dragOffset.ids.includes(card.id) ? s.dragOffset : null));
   const editing = useUiStore((s) => s.editingId === card.id);
@@ -124,3 +124,6 @@ export function Card({ card }: { card: CardModel }) {
     </div>
   );
 }
+
+/** Memoised: Immer keeps unchanged cards referentially equal, so pans and zooms skip them. */
+export const Card = memo(CardView);

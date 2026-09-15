@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import type React from 'react';
 import { ZONE_MIN_SIZE, type Rect, type Zone as ZoneModel } from '../model/types';
 import { ZONE_PALETTE } from '../model/palette';
@@ -6,7 +6,7 @@ import { useBoardStore } from '../store/boardStore';
 import { useUiStore, wantsPan } from '../store/uiStore';
 import { useDrag } from './useDrag';
 
-export function Zone({ zone }: { zone: ZoneModel }) {
+function ZoneView({ zone }: { zone: ZoneModel }) {
   const selected = useBoardStore((s) => s.selection.includes(zone.id));
   const editing = useUiStore((s) => s.editingId === zone.id);
   const offset = useUiStore((s) => (s.dragOffset && s.dragOffset.ids.includes(zone.id) ? s.dragOffset : null));
@@ -85,3 +85,6 @@ export function Zone({ zone }: { zone: ZoneModel }) {
     </div>
   );
 }
+
+/** Memoised: Immer keeps unchanged zones referentially equal, so pans and zooms skip them. */
+export const Zone = memo(ZoneView);
