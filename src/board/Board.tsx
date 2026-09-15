@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type React from 'react';
 import type { Rect, Viewport } from '../model/types';
 import { useBoardStore } from '../store/boardStore';
+import { useUiStore, wantsPan } from '../store/uiStore';
 import { normalizeRect, rectsIntersect, screenToBoard, zoomAround, type Point } from './coords';
 import { useDrag } from './useDrag';
 import { Card } from './Card';
@@ -19,7 +20,7 @@ export function Board() {
   const zones = useBoardStore((s) => s.board.zones);
   const vp = useBoardStore((s) => s.board.viewport);
   const setViewport = useBoardStore((s) => s.setViewport);
-  const [spaceHeld, setSpaceHeld] = useState(false);
+  const spaceHeld = useUiStore((s) => s.spaceHeld);
 
   // Wheel zoom must be a non-passive native listener so preventDefault works.
   useEffect(() => {
@@ -42,11 +43,19 @@ export function Board() {
   }, []);
 
   useEffect(() => {
+    const { setSpaceHeld } = useUiStore.getState();
     const down = (e: KeyboardEvent) => { if (e.code === 'Space' && !isTextTarget(e.target)) { e.preventDefault(); setSpaceHeld(true); } };
     const up = (e: KeyboardEvent) => { if (e.code === 'Space') setSpaceHeld(false); };
+    // A keyup can be missed while the window is unfocused, so losing focus releases space.
+    const blur = () => setSpaceHeld(false);
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
-    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
+    window.addEventListener('blur', blur);
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', blur);
+    };
   }, []);
 
   const panStart = useRef<Viewport>(vp);
@@ -106,8 +115,13 @@ export function Board() {
     e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('board-content');
 
   const onPointerDown = (e: React.PointerEvent) => {
+    // Pan gestures start from any target; cards and zones let these events through.
+    if (wantsPan(e)) {
+      if (e.button === 1) e.preventDefault(); // no browser autoscroll cursor
+      onPanDown(e);
+      return;
+    }
     if (!isEmptyCanvas(e)) return;
-    if (e.button === 1 || spaceHeld) { onPanDown(e); return; }
     onBandDown(e);
   };
 

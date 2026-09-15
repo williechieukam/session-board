@@ -7,10 +7,13 @@ export interface UiState {
   dragOffset: DragOffset | null;
   toast: string | null;
   timerOpen: boolean;
+  /** Space is held outside a text field, so a pointer drag pans from any target. */
+  spaceHeld: boolean;
   setEditing(id: string | null): void;
   setDragOffset(o: DragOffset | null): void;
   showToast(message: string): void;
   toggleTimer(): void;
+  setSpaceHeld(v: boolean): void;
 }
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -20,6 +23,7 @@ export const useUiStore = create<UiState>()((set) => ({
   dragOffset: null,
   toast: null,
   timerOpen: false,
+  spaceHeld: false,
   setEditing(id) { set({ editingId: id }); },
   setDragOffset(o) { set({ dragOffset: o }); },
   showToast(message) {
@@ -28,4 +32,10 @@ export const useUiStore = create<UiState>()((set) => ({
     toastTimer = setTimeout(() => set({ toast: null }), 4000);
   },
   toggleTimer() { set((s) => ({ timerOpen: !s.timerOpen })); },
+  setSpaceHeld(v) { set({ spaceHeld: v }); },
 }));
+
+/** True when a pointer-down should pan the board (middle button, or space held) rather than act on its target. */
+export function wantsPan(e: { button: number }): boolean {
+  return e.button === 1 || useUiStore.getState().spaceHeld;
+}

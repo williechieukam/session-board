@@ -3,7 +3,7 @@ import type React from 'react';
 import { ZONE_MIN_SIZE, type Rect, type Zone as ZoneModel } from '../model/types';
 import { ZONE_PALETTE } from '../model/palette';
 import { useBoardStore } from '../store/boardStore';
-import { useUiStore } from '../store/uiStore';
+import { useUiStore, wantsPan } from '../store/uiStore';
 import { useDrag } from './useDrag';
 
 export function Zone({ zone }: { zone: ZoneModel }) {
@@ -63,7 +63,7 @@ export function Zone({ zone }: { zone: ZoneModel }) {
         className="zone-header"
         data-testid="zone-header"
         style={{ background: palette.border }}
-        onPointerDown={(e: React.PointerEvent) => { e.stopPropagation(); if (!editing) onHeaderDown(e); }}
+        onPointerDown={(e: React.PointerEvent) => { if (wantsPan(e)) return; e.stopPropagation(); if (!editing) onHeaderDown(e); }}
         onDoubleClick={() => useUiStore.getState().setEditing(zone.id)}
       >
         {editing ? (
@@ -80,7 +80,7 @@ export function Zone({ zone }: { zone: ZoneModel }) {
         )}
       </div>
       {selected && (
-        <div className="resize-handle no-export" data-testid="resize-handle" onPointerDown={(e) => { e.stopPropagation(); onResizeDown(e); }} />
+        <div className="resize-handle no-export" data-testid="resize-handle" onPointerDown={(e) => { if (wantsPan(e)) return; e.stopPropagation(); onResizeDown(e); }} />
       )}
     </div>
   );

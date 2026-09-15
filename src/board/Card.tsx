@@ -3,7 +3,7 @@ import type React from 'react';
 import { CARD_MIN_SIZE, type Rect, type Card as CardModel } from '../model/types';
 import { CARD_PALETTE } from '../model/palette';
 import { useBoardStore } from '../store/boardStore';
-import { useUiStore } from '../store/uiStore';
+import { useUiStore, wantsPan } from '../store/uiStore';
 import { useDrag } from './useDrag';
 
 export function Card({ card }: { card: CardModel }) {
@@ -80,6 +80,7 @@ export function Card({ card }: { card: CardModel }) {
   };
 
   const onPointerDown = (e: React.PointerEvent) => {
+    if (wantsPan(e)) return; // let the board pan
     e.stopPropagation();
     if (editing) return;
     onDragDown(e);
@@ -118,7 +119,7 @@ export function Card({ card }: { card: CardModel }) {
         </div>
       )}
       {selected && (
-        <div className="resize-handle no-export" data-testid="resize-handle" onPointerDown={(e) => { e.stopPropagation(); onResizeDown(e); }} />
+        <div className="resize-handle no-export" data-testid="resize-handle" onPointerDown={(e) => { if (wantsPan(e)) return; e.stopPropagation(); onResizeDown(e); }} />
       )}
     </div>
   );

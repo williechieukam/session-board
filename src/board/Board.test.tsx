@@ -1,13 +1,13 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import { Board } from './Board';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
-import { createCard, createEmptyBoard } from '../model/types';
+import { createCard, createEmptyBoard, createZone } from '../model/types';
 import { DRAG_CANCEL_EVENT } from './useDrag';
 
 beforeEach(() => {
   useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
-  useUiStore.setState({ editingId: null, dragOffset: null, toast: null, timerOpen: false });
+  useUiStore.setState({ editingId: null, dragOffset: null, toast: null, timerOpen: false, spaceHeld: false });
 });
 
 test('double-click on empty canvas creates a centred, selected, editing card', () => {
@@ -114,4 +114,83 @@ test('a touch tap right after a pinch-cancelled gesture creates no card', () => 
   fireEvent.pointerUp(window, { clientX: 300, clientY: 300, pointerId: 2, pointerType: 'touch' });
   expect(useBoardStore.getState().board.cards).toHaveLength(0);
   vi.useRealTimers();
+});
+
+describe('panning from cards and zones', () => {
+  function setup() {
+    const card = createCard({ x: 100, y: 100 }, 1);
+    const zone = createZone({ x: 400, y: 400 });
+    useBoardStore.setState((s) => ({ board: { ...s.board, cards: [card], zones: [zone] }, selection: [card.id, zone.id] }));
+    render(<Board />);
+    mockRect(screen.getByTestId('board'));
+    return { card, zone };
+  }
+
+  function dragFrom(el: Element, button: number) {
+    const notPrevented = fireEvent.pointerDown(el, { clientX: 150, clientY: 150, button, isPrimary: true, pointerId: 1 });
+    fireEvent.pointerMove(window, { clientX: 180, clientY: 110, pointerId: 1 });
+    fireEvent.pointerUp(window, { clientX: 180, clientY: 110, pointerId: 1 });
+    return notPrevented;
+  }
+
+  function expectPannedOnly(card: ReturnType<typeof createCard>, zone: ReturnType<typeof createZone>) {
+    const st = useBoardStore.getState();
+    expect(st.board.viewport).toEqual({ x: 30, y: -40, zoom: 1 });
+    expect(st.board.cards[0]).toEqual(card);
+    expect(st.board.zones[0]).toEqual(zone);
+    expect(st.history.past).toHaveLength(0);
+    expect(useUiStore.getState().dragOffset).toBeNull();
+  }
+
+  test('space-drag starting on a card pans and leaves the card alone', () => {
+    const { card, zone } = setup();
+    useUiStore.setState({ spaceHeld: true });
+    dragFrom(screen.getByTestId('card'), 0);
+    expectPannedOnly(card, zone);
+  });
+
+  test('middle-button drag starting on a card pans and prevents autoscroll', () => {
+    const { card, zone } = setup();
+    expect(dragFrom(screen.getByTestId('card'), 1)).toBe(false);
+    expectPannedOnly(card, zone);
+  });
+
+  test('space-drag on card and zone resize handles and the zone header pans', () => {
+    const { card, zone } = setup();
+    useUiStore.setState({ spaceHeld: true });
+    const [cardHandle, zoneHandle] = [
+      screen.getByTestId('card').querySelector('[data-testid="resize-handle"]')!,
+      screen.getByTestId('zone').querySelector('[data-testid="resize-handle"]')!,
+    ];
+    for (const el of [cardHandle, zoneHandle, screen.getByTestId('zone-header')]) {
+      useBoardStore.getState().setViewport({ x: 0, y: 0, zoom: 1 });
+      dragFrom(el, 0);
+      expectPannedOnly(card, zone);
+    }
+  });
+
+  test('middle-button drag on a zone header pans', () => {
+    const { card, zone } = setup();
+    dragFrom(screen.getByTestId('zone-header'), 1);
+    expectPannedOnly(card, zone);
+  });
+
+  test('space in the board sets spaceHeld; keyup and window blur clear it', () => {
+    render(<Board />);
+    fireEvent.keyDown(window, { code: 'Space', key: ' ' });
+    expect(useUiStore.getState().spaceHeld).toBe(true);
+    fireEvent.keyUp(window, { code: 'Space', key: ' ' });
+    expect(useUiStore.getState().spaceHeld).toBe(false);
+    fireEvent.keyDown(window, { code: 'Space', key: ' ' });
+    fireEvent.blur(window);
+    expect(useUiStore.getState().spaceHeld).toBe(false);
+  });
+
+  test('typing a space in a card editor does not arm panning', () => {
+    const { card } = setup();
+    act(() => useUiStore.setState({ editingId: card.id }));
+    const ta = screen.getByRole('textbox');
+    fireEvent.keyDown(ta, { code: 'Space', key: ' ' });
+    expect(useUiStore.getState().spaceHeld).toBe(false);
+  });
 });
