@@ -7,6 +7,7 @@ import { useDrag } from './useDrag';
 import { Card } from './Card';
 import { Zone } from './Zone';
 import { SelectionBox } from './SelectionBox';
+import { SelectionToolbar } from './SelectionToolbar';
 import { usePinch } from './usePinch';
 import { boardContainer, clientToBoard, createCardCentredAt } from './actions';
 
@@ -129,6 +130,7 @@ export function Board() {
         {cards.map((c) => <Card key={c.id} card={c} />)}
       </div>
       {band && <SelectionBox rect={band} />}
+      <SelectionToolbar />
     </div>
   );
 }
