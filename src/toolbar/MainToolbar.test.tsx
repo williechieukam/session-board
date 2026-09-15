@@ -1,0 +1,82 @@
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MainToolbar } from './MainToolbar';
+import { useBoardStore } from '../store/boardStore';
+import { useUiStore } from '../store/uiStore';
+import { createEmptyBoard } from '../model/types';
+import * as fileIo from '../io/file';
+
+vi.mock('../io/file', async (orig) => ({ ...(await orig<typeof fileIo>()), loadBoardFromFile: vi.fn(), saveBoardToFile: vi.fn() }));
+
+const st = () => useBoardStore.getState();
+beforeEach(() => {
+  useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
+  useUiStore.setState({ editingId: null, dragOffset: null, toast: null, timerOpen: false });
+  vi.mocked(fileIo.loadBoardFromFile).mockReset();
+  vi.mocked(fileIo.saveBoardToFile).mockReset();
+});
+
+test('rename commits on blur', () => {
+  render(<MainToolbar />);
+  const input = screen.getByLabelText('Board name');
+  fireEvent.change(input, { target: { value: 'Retro' } });
+  expect(st().board.name).toBe('Untitled board');
+  fireEvent.blur(input);
+  expect(st().board.name).toBe('Retro');
+});
+
+test('new card, new zone, undo/redo enablement', () => {
+  render(<MainToolbar />);
+  expect(screen.getByLabelText('Undo')).toBeDisabled();
+  fireEvent.click(screen.getByLabelText('New card'));
+  expect(st().board.cards).toHaveLength(1);
+  expect(useUiStore.getState().editingId).toBe(st().board.cards[0].id);
+  fireEvent.click(screen.getByLabelText('New zone'));
+  expect(st().board.zones).toHaveLength(1);
+  expect(st().selection).toEqual([st().board.zones[0].id]);
+  expect(screen.getByLabelText('Undo')).toBeEnabled();
+  fireEvent.click(screen.getByLabelText('Undo'));
+  expect(st().board.zones).toHaveLength(0);
+  expect(screen.getByLabelText('Redo')).toBeEnabled();
+});
+
+test('zoom buttons', () => {
+  render(<MainToolbar />);
+  fireEvent.click(screen.getByLabelText('Zoom in'));
+  expect(st().board.viewport.zoom).toBeCloseTo(1.2);
+  fireEvent.click(screen.getByLabelText('Reset zoom'));
+  expect(st().board.viewport.zoom).toBeCloseTo(1);
+  fireEvent.click(screen.getByLabelText('Zoom out'));
+  expect(st().board.viewport.zoom).toBeCloseTo(1 / 1.2);
+});
+
+test('new board asks before discarding unsaved changes', () => {
+  render(<MainToolbar />);
+  st().addCard({ x: 0, y: 0 });
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  fireEvent.click(screen.getByLabelText('New board'));
+  expect(st().board.cards).toHaveLength(1);
+  confirm.mockReturnValue(true);
+  fireEvent.click(screen.getByLabelText('New board'));
+  expect(st().board.cards).toHaveLength(0);
+  confirm.mockRestore();
+});
+
+test('save marks clean and toasts', () => {
+  render(<MainToolbar />);
+  st().addCard({ x: 0, y: 0 });
+  fireEvent.click(screen.getByLabelText('Save'));
+  expect(fileIo.saveBoardToFile).toHaveBeenCalledTimes(1);
+  expect(st().dirty).toBe(false);
+  expect(useUiStore.getState().toast).toBe('Saved');
+});
+
+test('load replaces the board or toasts the error', async () => {
+  render(<MainToolbar />);
+  vi.mocked(fileIo.loadBoardFromFile).mockResolvedValue({ ok: true, board: createEmptyBoard('Loaded') });
+  fireEvent.click(screen.getByLabelText('Load'));
+  await waitFor(() => expect(st().board.name).toBe('Loaded'));
+  vi.mocked(fileIo.loadBoardFromFile).mockResolvedValue({ ok: false, error: 'Unsupported board version 2' });
+  fireEvent.click(screen.getByLabelText('Load'));
+  await waitFor(() => expect(useUiStore.getState().toast).toBe('Could not load: Unsupported board version 2'));
+  expect(st().board.name).toBe('Loaded');
+});
