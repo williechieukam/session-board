@@ -4,8 +4,11 @@ import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { createEmptyBoard } from '../model/types';
 import * as fileIo from '../io/file';
+import { exportBoardPng } from '../io/exportImage';
+import { boardContainer } from '../board/actions';
 
 vi.mock('../io/file', async (orig) => ({ ...(await orig<typeof fileIo>()), loadBoardFromFile: vi.fn(), saveBoardToFile: vi.fn() }));
+vi.mock('../io/exportImage', () => ({ exportBoardPng: vi.fn() }));
 
 const st = () => useBoardStore.getState();
 beforeEach(() => {
@@ -79,4 +82,15 @@ test('load replaces the board or toasts the error', async () => {
   fireEvent.click(screen.getByLabelText('Load'));
   await waitFor(() => expect(useUiStore.getState().toast).toBe('Could not load: Unsupported board version 2'));
   expect(st().board.name).toBe('Loaded');
+});
+
+test('export toasts on failure', async () => {
+  const container = document.createElement('div');
+  container.innerHTML = '<div class="board-content"></div>';
+  boardContainer.el = container as HTMLDivElement;
+  vi.mocked(exportBoardPng).mockRejectedValue(new Error('The board is empty'));
+  render(<MainToolbar />);
+  fireEvent.click(screen.getByLabelText('Export PNG'));
+  await waitFor(() => expect(useUiStore.getState().toast).toBe('Export failed: The board is empty'));
+  boardContainer.el = null;
 });

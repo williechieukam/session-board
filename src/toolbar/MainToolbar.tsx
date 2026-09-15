@@ -3,7 +3,8 @@ import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { clearBackup } from '../store/backup';
 import { loadBoardFromFile, saveBoardToFile } from '../io/file';
-import { createCardCentredAt, createZoneCentred, viewportCentre, zoomBy, zoomReset } from '../board/actions';
+import { exportBoardPng } from '../io/exportImage';
+import { boardContainer, createCardCentredAt, createZoneCentred, viewportCentre, zoomBy, zoomReset } from '../board/actions';
 
 export function MainToolbar() {
   const name = useBoardStore((s) => s.board.name);
@@ -41,6 +42,16 @@ export function MainToolbar() {
     st().loadBoard(result.board);
   };
 
+  const onExport = async () => {
+    const content = boardContainer.el?.querySelector<HTMLElement>('.board-content');
+    if (!content) return;
+    try {
+      await exportBoardPng(content, st().board);
+    } catch (err) {
+      toast(`Export failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  };
+
   return (
     <div className="main-toolbar">
       <input
@@ -65,6 +76,7 @@ export function MainToolbar() {
       <span className="sep" />
       <button aria-label="Save" onClick={onSave}>Save</button>
       <button aria-label="Load" onClick={onLoad}>Load</button>
+      <button aria-label="Export PNG" onClick={onExport}>Export PNG</button>
     </div>
   );
 }
