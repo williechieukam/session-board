@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Board } from './board/Board';
 import { MainToolbar } from './toolbar/MainToolbar';
+import { Timer } from './timer/Timer';
 import { Toast } from './ui/Toast';
 import { useBoardStore } from './store/boardStore';
 import { readBackup, startBackup } from './store/backup';
@@ -24,6 +25,7 @@ export function App() {
     <div className="app">
       <MainToolbar />
       <Board />
+      <Timer />
       <Toast />
     </div>
   );

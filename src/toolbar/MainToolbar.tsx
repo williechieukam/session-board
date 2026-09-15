@@ -77,6 +77,7 @@ export function MainToolbar() {
       <button aria-label="Save" onClick={onSave}>Save</button>
       <button aria-label="Load" onClick={onLoad}>Load</button>
       <button aria-label="Export PNG" onClick={onExport}>Export PNG</button>
+      <button aria-label="Timer" onClick={() => useUiStore.getState().toggleTimer()}>Timer</button>
     </div>
   );
 }
