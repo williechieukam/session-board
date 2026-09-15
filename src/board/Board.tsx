@@ -5,6 +5,7 @@ import { useBoardStore } from '../store/boardStore';
 import { normalizeRect, rectsIntersect, screenToBoard, zoomAround, type Point } from './coords';
 import { useDrag } from './useDrag';
 import { Card } from './Card';
+import { Zone } from './Zone';
 import { SelectionBox } from './SelectionBox';
 import { usePinch } from './usePinch';
 import { boardContainer, clientToBoard, createCardCentredAt } from './actions';
@@ -16,6 +17,7 @@ function isTextTarget(t: EventTarget | null): boolean {
 export function Board() {
   const containerRef = useRef<HTMLDivElement>(null);
   const cards = useBoardStore((s) => s.board.cards);
+  const zones = useBoardStore((s) => s.board.zones);
   const vp = useBoardStore((s) => s.board.viewport);
   const setViewport = useBoardStore((s) => s.setViewport);
   const [spaceHeld, setSpaceHeld] = useState(false);
@@ -123,6 +125,7 @@ export function Board() {
       onDoubleClick={onDoubleClick}
     >
       <div className="board-content" style={{ transform: `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})` }}>
+        {zones.map((z) => <Zone key={z.id} zone={z} />)}
         {cards.map((c) => <Card key={c.id} card={c} />)}
       </div>
       {band && <SelectionBox rect={band} />}
