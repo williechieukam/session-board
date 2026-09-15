@@ -1,4 +1,4 @@
-import { serializeBoard, parseBoardFile, safeFileName, saveBoardToFile } from './file';
+import { serializeBoard, parseBoardFile, safeFileName, saveBoardToFile, pickFile } from './file';
 import { createCard, createEmptyBoard } from '../model/types';
 
 test('serialize and parse round trip', () => {
@@ -28,5 +28,25 @@ test('saveBoardToFile downloads <name>.board.json', () => {
   vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) { clicks.push(this.download); });
   saveBoardToFile(createEmptyBoard('My board'));
   expect(clicks).toEqual(['My board.board.json']);
+  vi.restoreAllMocks();
+});
+
+test('pickFile settles an abandoned picker when a new one opens', async () => {
+  vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {});
+
+  const first = pickFile('.json');
+  const second = pickFile('.json');
+
+  await expect(first).resolves.toBeNull();
+  let inputs = document.body.querySelectorAll('input[type="file"]');
+  expect(inputs).toHaveLength(1);
+
+  const remaining = inputs[0] as HTMLInputElement;
+  remaining.dispatchEvent(new Event('cancel'));
+
+  await expect(second).resolves.toBeNull();
+  inputs = document.body.querySelectorAll('input[type="file"]');
+  expect(inputs).toHaveLength(0);
+
   vi.restoreAllMocks();
 });

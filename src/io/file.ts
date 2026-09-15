@@ -31,14 +31,28 @@ export function saveBoardToFile(board: Board): void {
   downloadBlob(`${safeFileName(board.name)}.board.json`, new Blob([serializeBoard(board)], { type: 'application/json' }));
 }
 
+/**
+ * At most one file picker can be pending at a time. Some browsers never fire
+ * a `cancel` event on `<input type=file>` when the dialog is dismissed, so a
+ * newly opened picker resolves and cleans up whatever picker it replaces
+ * rather than leaving its promise permanently unresolved.
+ */
+let pendingPicker: { input: HTMLInputElement; resolve: (file: File | null) => void } | null = null;
+
 export function pickFile(accept: string): Promise<File | null> {
+  if (pendingPicker) {
+    pendingPicker.resolve(null);
+    pendingPicker.input.remove();
+    pendingPicker = null;
+  }
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = accept;
     input.style.display = 'none';
-    input.onchange = () => { resolve(input.files?.[0] ?? null); input.remove(); };
-    input.oncancel = () => { resolve(null); input.remove(); };
+    input.onchange = () => { pendingPicker = null; resolve(input.files?.[0] ?? null); input.remove(); };
+    input.oncancel = () => { pendingPicker = null; resolve(null); input.remove(); };
+    pendingPicker = { input, resolve };
     document.body.appendChild(input);
     input.click();
   });
