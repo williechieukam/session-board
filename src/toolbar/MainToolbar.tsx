@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
-import { flushSync } from 'react-dom';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
-import { clearBackup } from '../store/backup';
-import { loadBoardFromFile, saveBoardToFile } from '../io/file';
-import { exportBoardPng } from '../io/exportImage';
-import { boardContainer, createCardCentredAt, createZoneCentred, viewportCentre, zoomBy, zoomReset } from '../board/actions';
+import { createCardCentredAt, createZoneCentred, viewportCentre, zoomBy, zoomReset } from '../board/actions';
+import { exportPng, newBoard, openFromFile, saveToFile } from '../chrome/fileActions';
 
 export function MainToolbar() {
   const name = useBoardStore((s) => s.board.name);
@@ -16,44 +13,10 @@ export function MainToolbar() {
   useEffect(() => setDraftName(name), [name]);
 
   const st = () => useBoardStore.getState();
-  const toast = (m: string) => useUiStore.getState().showToast(m);
 
   const commitName = () => {
     const trimmed = draftName.trim();
     if (trimmed && trimmed !== name) st().renameBoard(trimmed); else setDraftName(name);
-  };
-
-  const onNewBoard = () => {
-    if (st().dirty && !window.confirm('Discard unsaved changes and start a new board?')) return;
-    st().newBoard();
-    clearBackup();
-  };
-
-  const onSave = () => {
-    saveBoardToFile(st().board);
-    st().markClean();
-    toast('Saved');
-  };
-
-  const onLoad = async () => {
-    if (st().dirty && !window.confirm('Discard unsaved changes and load a file?')) return;
-    const result = await loadBoardFromFile();
-    if (!result) return;
-    if (!result.ok) { toast(`Could not load: ${result.error}`); return; }
-    st().loadBoard(result.board);
-  };
-
-  const onExport = async () => {
-    const content = boardContainer.el?.querySelector<HTMLElement>('.board-content');
-    if (!content) return;
-    // Commit an open card or label editor and render it, so the raster shows the text, not the textarea.
-    const active = document.activeElement;
-    if (active instanceof HTMLElement && active !== document.body) flushSync(() => active.blur());
-    try {
-      await exportBoardPng(content, st().board);
-    } catch (err) {
-      toast(`Export failed: ${err instanceof Error ? err.message : String(err)}`);
-    }
   };
 
   return (
@@ -67,7 +30,7 @@ export function MainToolbar() {
         onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
       />
       <span className="sep" />
-      <button aria-label="New board" onClick={onNewBoard}>New board</button>
+      <button aria-label="New board" onClick={newBoard}>New board</button>
       <button aria-label="New card" title="N" onClick={() => createCardCentredAt(viewportCentre())}>+ Card</button>
       <button aria-label="New zone" onClick={createZoneCentred}>+ Zone</button>
       <span className="sep" />
@@ -78,9 +41,9 @@ export function MainToolbar() {
       <button aria-label="Reset zoom" className="zoom-label" onClick={zoomReset}>{Math.round(zoom * 100)}%</button>
       <button aria-label="Zoom in" onClick={() => zoomBy(1.2)}>+</button>
       <span className="sep" />
-      <button aria-label="Save" onClick={onSave}>Save</button>
-      <button aria-label="Load" onClick={onLoad}>Load</button>
-      <button aria-label="Export PNG" onClick={onExport}>Export PNG</button>
+      <button aria-label="Save" onClick={saveToFile}>Save</button>
+      <button aria-label="Load" onClick={() => void openFromFile()}>Load</button>
+      <button aria-label="Export PNG" onClick={() => void exportPng()}>Export PNG</button>
       <button aria-label="Timer" onClick={() => useUiStore.getState().toggleTimer()}>Timer</button>
     </div>
   );

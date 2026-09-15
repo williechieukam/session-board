@@ -9,11 +9,14 @@ export interface UiState {
   timerOpen: boolean;
   /** Space is held outside a text field, so a pointer drag pans from any target. */
   spaceHeld: boolean;
+  /** Browser backup writes failed, so the file pill reports that the backup is off. */
+  backupOff: boolean;
   setEditing(id: string | null): void;
   setDragOffset(o: DragOffset | null): void;
   showToast(message: string): void;
   toggleTimer(): void;
   setSpaceHeld(v: boolean): void;
+  setBackupOff(v: boolean): void;
 }
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -24,6 +27,7 @@ export const useUiStore = create<UiState>()((set) => ({
   toast: null,
   timerOpen: false,
   spaceHeld: false,
+  backupOff: false,
   setEditing(id) { set({ editingId: id }); },
   setDragOffset(o) { set({ dragOffset: o }); },
   showToast(message) {
@@ -33,6 +37,7 @@ export const useUiStore = create<UiState>()((set) => ({
   },
   toggleTimer() { set((s) => ({ timerOpen: !s.timerOpen })); },
   setSpaceHeld(v) { set({ spaceHeld: v }); },
+  setBackupOff(v) { set({ backupOff: v }); },
 }));
 
 /** True when a pointer-down should pan the board (middle button, or space held) rather than act on its target. */

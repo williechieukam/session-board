@@ -141,3 +141,32 @@ button, input, textarea { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .icon-btn, .tip { transition: none; }
 }
+
+/* ===== File pill and board menu ===== */
+.file-pill { position: fixed; left: 16px; top: 16px; height: 46px; padding: 0 6px 0 12px; gap: 8px; max-width: calc(100vw - 32px); z-index: var(--z-chrome); }
+.app-mark { position: relative; flex: none; width: 22px; height: 22px; border-radius: 6px; background: var(--primary); }
+.app-mark::after { content: ''; position: absolute; right: 4px; bottom: 4px; width: 9px; height: 9px; border-radius: 2px; background: var(--panel); }
+.file-pill .board-name {
+  width: 16ch; min-width: 8ch; padding: 5px 8px; border: 1px solid transparent; border-radius: 8px; background: transparent;
+  font-size: 16px; font-weight: 700; text-overflow: ellipsis;
+}
+.file-pill .board-name:hover { border-color: var(--line); }
+.file-pill .board-name:focus { border-color: var(--line); outline: 2px solid var(--primary); outline-offset: 1px; }
+.board-menu { position: relative; }
+.menu-btn { width: 32px; height: 32px; color: var(--muted); }
+.status { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.status .icon { width: 16px; height: 16px; }
+.save-btn {
+  display: flex; align-items: center; gap: 6px; padding: 8px 12px; border: 0; border-radius: 10px; background: transparent; cursor: pointer;
+  font-size: 14px; font-weight: 700; color: var(--primary); white-space: nowrap; transition: background-color 150ms var(--ease-out);
+}
+.save-btn:hover { background: var(--primary-soft); }
+.dirty-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
+.menu {
+  position: absolute; left: -8px; top: calc(100% + 10px); z-index: var(--z-popover);
+  flex-direction: column; align-items: stretch; min-width: 200px; padding: 6px; border-radius: 12px;
+}
+.menu-item { text-align: left; padding: 9px 12px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; font-size: 14px; font-weight: 500; }
+.menu-item:hover, .menu-item:focus-visible { background: var(--hover); }
+@media (max-width: 700px) { .status { display: none; } }
+@media (prefers-reduced-motion: reduce) { .save-btn { transition: none; } }

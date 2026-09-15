@@ -37,6 +37,7 @@ export function startBackup(): () => void {
     timer = null;
     if (!writeBackup(useBoardStore.getState().board)) {
       disabled = true;
+      useUiStore.getState().setBackupOff(true);
       useUiStore.getState().showToast('Browser backup is off (storage unavailable)');
     }
   };

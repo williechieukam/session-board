@@ -7,7 +7,7 @@ beforeEach(() => {
   localStorage.clear();
   vi.useFakeTimers();
   useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
-  useUiStore.setState({ toast: null });
+  useUiStore.setState({ toast: null, backupOff: false });
 });
 afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
 
@@ -46,6 +46,7 @@ test('degrades with one toast when storage throws', () => {
   useBoardStore.getState().addCard({ x: 1, y: 1 });
   vi.advanceTimersByTime(500);
   expect(useUiStore.getState().toast).toMatch(/backup is off/i);
+  expect(useUiStore.getState().backupOff).toBe(true);
   useUiStore.setState({ toast: null });
   useBoardStore.getState().addCard({ x: 2, y: 2 });
   vi.advanceTimersByTime(500);

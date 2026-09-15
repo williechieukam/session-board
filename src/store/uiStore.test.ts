@@ -24,3 +24,10 @@ test('toggleTimer flips', () => {
   useUiStore.getState().toggleTimer();
   expect(useUiStore.getState().timerOpen).toBe(true);
 });
+
+test('backupOff setter', () => {
+  expect(useUiStore.getState().backupOff).toBe(false);
+  useUiStore.getState().setBackupOff(true);
+  expect(useUiStore.getState().backupOff).toBe(true);
+  useUiStore.getState().setBackupOff(false);
+});
