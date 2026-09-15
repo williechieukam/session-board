@@ -218,3 +218,28 @@ button, input, textarea { font: inherit; color: inherit; }
 /* ===== Present-mode viewport animation ===== */
 .board-content.animating { transition: transform 320ms var(--ease-out); }
 @media (prefers-reduced-motion: reduce) { .board-content.animating { transition: none; } }
+
+/* ===== Present mode ===== */
+.present-btn {
+  position: relative; height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 16px;
+  border: 0; border-radius: 14px; background: var(--primary); color: var(--panel); box-shadow: var(--shadow-panel);
+  font-size: 15px; font-weight: 700; cursor: pointer; transition: background-color 150ms var(--ease-out);
+}
+.present-btn:hover { background: oklch(0.40 0.10 232); }
+.present-btn:hover .tip, .present-btn:focus-visible .tip { opacity: 1; visibility: visible; transition-delay: 400ms, 400ms; }
+.chrome-hideable { transition: opacity 200ms var(--ease-out), visibility 0s linear 0s; }
+.is-presenting .chrome-hideable { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 200ms var(--ease-out), visibility 0s linear 200ms; }
+.is-presenting .timer { height: 64px; padding: 0 10px 0 22px; gap: 14px; }
+.is-presenting .timer-main { gap: 14px; }
+.is-presenting .t-time { font-size: 38px; }
+.is-presenting .t-label { font-size: 16px; }
+.present-hint {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: var(--z-chrome);
+  height: 48px; padding: 0 6px; gap: 6px; border-radius: 999px;
+}
+.present-pos { min-width: 48px; text-align: center; font-family: var(--font-mono); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.hint-keys { padding: 0 8px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.exit-btn { height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: 14px; font-weight: 700; cursor: pointer; }
+.exit-btn:hover { background: oklch(0.90 0.045 232); }
+@media (max-width: 700px) { .hint-keys { display: none; } }
+@media (prefers-reduced-motion: reduce) { .present-btn, .chrome-hideable, .is-presenting .chrome-hideable { transition: none; } }

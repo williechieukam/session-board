@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { createCardCentredAt, createZoneCentred, viewportCentre } from './actions';
+import { enterPresent, exitPresent, stepPresent } from './present';
 
 export function isTextTarget(t: EventTarget | null): boolean {
   return t instanceof HTMLElement && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
@@ -10,6 +11,8 @@ export function isTextTarget(t: EventTarget | null): boolean {
 const ARROWS: Record<string, [number, number]> = {
   ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1],
 };
+const NEXT_KEYS = new Set(['ArrowRight', 'ArrowDown', 'PageDown']);
+const PREV_KEYS = new Set(['ArrowLeft', 'ArrowUp', 'PageUp']);
 
 export function useKeyboardShortcuts(): void {
   useEffect(() => {
@@ -18,6 +21,14 @@ export function useKeyboardShortcuts(): void {
       const st = useBoardStore.getState();
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
+
+      // Present mode: clicker and arrow keys step through zones, Escape exits, and creation keys are ignored.
+      if (useUiStore.getState().presenting && !mod) {
+        if (e.key === 'Escape') { e.preventDefault(); exitPresent(); return; }
+        if (NEXT_KEYS.has(e.key)) { e.preventDefault(); stepPresent(1); return; }
+        if (PREV_KEYS.has(e.key)) { e.preventDefault(); stepPresent(-1); return; }
+        if (key === 'n' || key === 'z' || key === 'p') return;
+      }
 
       if (mod && key === 'z') { e.preventDefault(); if (e.shiftKey) st.redo(); else st.undo(); return; }
       if (mod && key === 'y') { e.preventDefault(); st.redo(); return; }
@@ -45,6 +56,7 @@ export function useKeyboardShortcuts(): void {
       }
       if (key === 'n') { e.preventDefault(); createCardCentredAt(viewportCentre()); return; }
       if (key === 'z') { e.preventDefault(); createZoneCentred(); return; }
+      if (key === 'p') { e.preventDefault(); enterPresent(); return; }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);

@@ -2,7 +2,8 @@ import { render, fireEvent } from '@testing-library/react';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
-import { createEmptyBoard } from '../model/types';
+import { createEmptyBoard, createZone } from '../model/types';
+import { exitPresent } from './present';
 
 function Probe() { useKeyboardShortcuts(); return <textarea data-testid="ta" />; }
 const st = () => useBoardStore.getState();
@@ -82,4 +83,49 @@ test('Z creates a zone at the viewport centre and selects it', () => {
   expect(st().selection).toEqual([st().board.zones[0].id]);
   fireEvent.keyDown(window, { key: 'z', ctrlKey: true });   // Ctrl+Z still undoes instead of adding a zone
   expect(st().board.zones).toHaveLength(0);
+});
+
+describe('while presenting', () => {
+  function setupZones(): string {
+    const id = st().addCard({ x: 10, y: 60 });
+    const z1 = createZone({ x: 0, y: 0, width: 400, height: 300 });
+    const z2 = createZone({ x: 600, y: 0, width: 400, height: 300 });
+    useBoardStore.setState((s) => ({ board: { ...s.board, zones: [z1, z2] } }));
+    return id;
+  }
+  afterEach(() => { exitPresent(); vi.useRealTimers(); });
+
+  test('P enters; arrows and page keys step instead of nudging; Escape exits', () => {
+    vi.useFakeTimers();
+    render(<Probe />);
+    const id = setupZones();
+    fireEvent.keyDown(window, { key: 'p' });
+    expect(useUiStore.getState().presenting).toBe(true);
+    st().setSelection([id]);
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    expect(useUiStore.getState().presentStop).toBe(1);
+    expect(st().board.cards[0]).toMatchObject({ x: 10, y: 60 });       // not nudged
+    fireEvent.keyDown(window, { key: 'PageDown' });
+    expect(useUiStore.getState().presentStop).toBe(2);
+    fireEvent.keyDown(window, { key: 'PageUp' });
+    fireEvent.keyDown(window, { key: 'ArrowUp' });
+    expect(useUiStore.getState().presentStop).toBe(0);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useUiStore.getState().presenting).toBe(false);
+  });
+
+  test('N, Z and P are ignored; other shortcuts still work', () => {
+    vi.useFakeTimers();
+    render(<Probe />);
+    setupZones();
+    fireEvent.keyDown(window, { key: 'p' });
+    fireEvent.keyDown(window, { key: 'n' });
+    fireEvent.keyDown(window, { key: 'z' });
+    fireEvent.keyDown(window, { key: 'p' });
+    expect(st().board.cards).toHaveLength(1);
+    expect(st().board.zones).toHaveLength(2);
+    expect(useUiStore.getState().presenting).toBe(true);
+    fireEvent.keyDown(window, { key: 'z', ctrlKey: true });            // undo the card added in setup
+    expect(st().board.cards).toHaveLength(0);
+  });
 });

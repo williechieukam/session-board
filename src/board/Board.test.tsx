@@ -263,3 +263,11 @@ test('board content animates only while a programmatic viewport change runs', ()
   expect(content).toHaveClass('animating');
   act(() => useUiStore.setState({ animateViewport: false }));
 });
+
+test('the empty-board hint hides while presenting', () => {
+  render(<Board />);
+  expect(screen.getByTestId('empty-hint')).toBeInTheDocument();
+  act(() => useUiStore.setState({ presenting: true }));
+  expect(screen.queryByTestId('empty-hint')).toBeNull();
+  act(() => useUiStore.setState({ presenting: false }));
+});

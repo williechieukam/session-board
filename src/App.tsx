@@ -8,9 +8,12 @@ import { Toast } from './ui/Toast';
 import { useBoardStore } from './store/boardStore';
 import { readBackup, startBackup } from './store/backup';
 import { usePresentMode } from './board/usePresentMode';
+import { PresentHint } from './chrome/PresentHint';
+import { useUiStore } from './store/uiStore';
 
 export function App() {
   usePresentMode();
+  const presenting = useUiStore((s) => s.presenting);
   useEffect(() => {
     const backup = readBackup();
     if (backup) useBoardStore.getState().loadBoard(backup);
@@ -26,12 +29,13 @@ export function App() {
   }, []);
 
   return (
-    <div className="app">
+    <div className={'app' + (presenting ? ' is-presenting' : '')}>
       <Board />
       <FilePill />
       <SessionBar />
       <ToolDock />
       <ZoomCluster />
+      <PresentHint />
       <Toast />
     </div>
   );
