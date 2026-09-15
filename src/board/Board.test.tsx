@@ -231,3 +231,19 @@ describe('synthetic dblclick after a touch double-tap', () => {
     vi.useRealTimers();
   });
 });
+
+test('wheel zoom normalises line and page delta modes to pixels', () => {
+  render(<Board />);
+  const board = screen.getByTestId('board');
+  mockRect(board);
+  const zoomAfter = (init: { deltaMode: number; deltaY: number }) => {
+    act(() => useBoardStore.getState().setViewport({ x: 0, y: 0, zoom: 1 }));
+    fireEvent.wheel(board, { clientX: 100, clientY: 100, ...init });
+    return useBoardStore.getState().board.viewport.zoom;
+  };
+  const pixels = zoomAfter({ deltaMode: 0, deltaY: -48 });
+  expect(pixels).toBeGreaterThan(1);
+  expect(zoomAfter({ deltaMode: 1, deltaY: -3 })).toBeCloseTo(pixels, 10);
+  // jsdom reports clientHeight 0, so page mode falls back to 800 px per page.
+  expect(zoomAfter({ deltaMode: 2, deltaY: -0.06 })).toBeCloseTo(pixels, 10);
+});

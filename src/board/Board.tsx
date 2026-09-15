@@ -30,7 +30,9 @@ export function Board() {
       e.preventDefault();
       const rect = el.getBoundingClientRect();
       const anchor = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-      const factor = Math.exp(-e.deltaY * 0.0015);
+      // Firefox reports line (1) or page (2) deltas; normalise to pixels so zoom speed matches.
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight || 800 : 1;
+      const factor = Math.exp(-e.deltaY * unit * 0.0015);
       setViewport(zoomAround(useBoardStore.getState().board.viewport, factor, anchor));
     };
     el.addEventListener('wheel', onWheel, { passive: false });
