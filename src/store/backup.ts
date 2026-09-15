@@ -33,19 +33,28 @@ export function clearBackup(): void {
 export function startBackup(): () => void {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let disabled = false;
+  const write = () => {
+    timer = null;
+    if (!writeBackup(useBoardStore.getState().board)) {
+      disabled = true;
+      useUiStore.getState().showToast('Browser backup is off (storage unavailable)');
+    }
+  };
   const unsubscribe = useBoardStore.subscribe((state, prev) => {
     if (disabled || state.board === prev.board) return;
     if (timer) clearTimeout(timer);
-    timer = setTimeout(() => {
-      timer = null;
-      if (!writeBackup(useBoardStore.getState().board)) {
-        disabled = true;
-        useUiStore.getState().showToast('Browser backup is off (storage unavailable)');
-      }
-    }, DEBOUNCE_MS);
+    timer = setTimeout(write, DEBOUNCE_MS);
   });
+  // Closing the tab inside the debounce window must not lose the last change.
+  const onPageHide = () => {
+    if (!timer) return;
+    clearTimeout(timer);
+    write();
+  };
+  window.addEventListener('pagehide', onPageHide);
   return () => {
     unsubscribe();
+    window.removeEventListener('pagehide', onPageHide);
     if (timer) clearTimeout(timer);
   };
 }

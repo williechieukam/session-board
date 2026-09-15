@@ -52,3 +52,23 @@ test('degrades with one toast when storage throws', () => {
   expect(useUiStore.getState().toast).toBeNull();
   stop();
 });
+
+test('pagehide flushes a pending backup immediately; stop removes the listener', () => {
+  const stop = startBackup();
+  useBoardStore.getState().addCard({ x: 1, y: 1 });
+  vi.advanceTimersByTime(100);
+  window.dispatchEvent(new Event('pagehide'));
+  expect(readBackup()?.cards).toHaveLength(1);
+  // The flushed write is not repeated when the old timer would have fired.
+  const setItem = vi.spyOn(localStorage, 'setItem');
+  vi.advanceTimersByTime(600);
+  expect(setItem).not.toHaveBeenCalled();
+  // With nothing pending, pagehide writes nothing.
+  window.dispatchEvent(new Event('pagehide'));
+  expect(setItem).not.toHaveBeenCalled();
+  useBoardStore.getState().addCard({ x: 2, y: 2 });
+  stop();
+  window.dispatchEvent(new Event('pagehide'));
+  expect(setItem).not.toHaveBeenCalled();
+  expect(readBackup()?.cards).toHaveLength(1);
+});
