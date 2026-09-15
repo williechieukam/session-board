@@ -247,3 +247,10 @@ test('wheel zoom normalises line and page delta modes to pixels', () => {
   // jsdom reports clientHeight 0, so page mode falls back to 800 px per page.
   expect(zoomAfter({ deltaMode: 2, deltaY: -0.06 })).toBeCloseTo(pixels, 10);
 });
+
+test('shows the empty-board hint only when there are no notes and no zones', () => {
+  render(<Board />);
+  expect(screen.getByTestId('empty-hint')).toHaveTextContent('Double-click anywhere to add a note');
+  act(() => { useBoardStore.getState().addZone({ x: 0, y: 0 }); });
+  expect(screen.queryByTestId('empty-hint')).toBeNull();
+});

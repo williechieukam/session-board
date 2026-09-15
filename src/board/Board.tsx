@@ -9,6 +9,7 @@ import { Card } from './Card';
 import { Zone } from './Zone';
 import { SelectionBox } from './SelectionBox';
 import { SelectionToolbar } from './SelectionToolbar';
+import { EmptyHint } from './EmptyHint';
 import { usePinch } from './usePinch';
 import { boardContainer, clientToBoard, createCardCentredAt } from './actions';
 import { isTextTarget, useKeyboardShortcuts } from './useKeyboardShortcuts';
@@ -155,6 +156,7 @@ export function Board() {
         {zones.map((z) => <Zone key={z.id} zone={z} />)}
         {cards.map((c) => <Card key={c.id} card={c} />)}
       </div>
+      <EmptyHint />
       {band && <SelectionBox rect={band} />}
       <SelectionToolbar />
     </div>

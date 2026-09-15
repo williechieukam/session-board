@@ -46,9 +46,11 @@ test('resize handle changes card size', async ({ page }) => {
   const o = await boardOrigin(page);
   await page.mouse.click(o.x + 300, o.y + 300);
   const handle = (await page.getByTestId('resize-handle').boundingBox())!;
-  await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+  const hx = handle.x + handle.width / 2;
+  const hy = handle.y + handle.height / 2;
+  await page.mouse.move(hx, hy);
   await page.mouse.down();
-  await page.mouse.move(handle.x + 80, handle.y + 40, { steps: 5 });
+  await page.mouse.move(hx + 80, hy + 40, { steps: 5 });
   await page.mouse.up();
   const pos = await cardPos(page, 'Grow');
   expect(pos.w).toBeGreaterThan(260);
@@ -77,21 +79,24 @@ test('rubber-band selects two cards, moves both, undo restores', async ({ page }
 
 test('save then load round trip', async ({ page }) => {
   await createCard(page, 300, 300, 'Persist me');
-  const [download] = await Promise.all([page.waitForEvent('download'), page.getByLabel('Save').click()]);
+  const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Save file' }).click()]);
   expect(download.suggestedFilename()).toBe('Untitled board.board.json');
   const path = await download.path();
   expect(JSON.parse(fs.readFileSync(path!, 'utf8')).cards).toHaveLength(1);
   page.on('dialog', (d) => d.accept());
-  await page.getByLabel('New board').click();
+  await page.getByRole('button', { name: 'Board menu' }).click();
+  await page.getByRole('menuitem', { name: 'New board' }).click();
   await expect(page.getByTestId('card')).toHaveCount(0);
-  const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.getByLabel('Load').click()]);
+  await page.getByRole('button', { name: 'Board menu' }).click();
+  const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.getByRole('menuitem', { name: 'Open file…' }).click()]);
   await chooser.setFiles(path!);
   await expect(page.getByTestId('card')).toContainText('Persist me');
 });
 
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
-  const [download] = await Promise.all([page.waitForEvent('download'), page.getByLabel('Export PNG').click()]);
+  await page.getByRole('button', { name: 'Board menu' }).click();
+  const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('menuitem', { name: 'Export PNG' }).click()]);
   expect(download.suggestedFilename()).toBe('Untitled board.png');
   const bytes = fs.readFileSync((await download.path())!);
   expect(bytes.subarray(1, 4).toString()).toBe('PNG');

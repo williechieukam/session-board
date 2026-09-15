@@ -12,7 +12,7 @@ test('double-tap creates a card and tap selects it', async ({ page }) => {
   await page.touchscreen.tap(x, y);
   await expect(page.getByTestId('card')).toHaveCount(1);
   await page.locator('textarea.card-editor').fill('Tapped');
-  await page.touchscreen.tap(box.x + 20, box.y + 20);   // tap empty canvas: blur + clear selection
+  await page.touchscreen.tap(box.x + 20, box.y + box.height / 2);   // tap empty canvas at the left edge, clear of all chrome
   await expect(page.locator('.card.selected')).toHaveCount(0);
   const card = (await page.getByTestId('card').boundingBox())!;
   await page.touchscreen.tap(card.x + card.width / 2, card.y + card.height / 2);

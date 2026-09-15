@@ -15,3 +15,13 @@ test('restores a backup on startup', () => {
   expect(useBoardStore.getState().board.name).toBe('From backup');
   localStorage.clear();
 });
+
+test('renders the floating chrome around the board', () => {
+  render(<App />);
+  expect(screen.getByLabelText('Board name')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Save file' })).toBeInTheDocument();
+  expect(screen.getByRole('toolbar', { name: 'Tools' })).toBeInTheDocument();
+  expect(screen.getByRole('toolbar', { name: 'Zoom' })).toBeInTheDocument();
+  expect(screen.getByTestId('timer')).toBeInTheDocument();
+  expect(screen.queryByLabelText('Load')).toBeNull();                 // the old toolbar is gone
+});

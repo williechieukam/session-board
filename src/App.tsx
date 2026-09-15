@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { Board } from './board/Board';
-import { MainToolbar } from './toolbar/MainToolbar';
+import { FilePill } from './chrome/FilePill';
+import { SessionBar } from './chrome/SessionBar';
+import { ToolDock } from './chrome/ToolDock';
+import { ZoomCluster } from './chrome/ZoomCluster';
 import { Toast } from './ui/Toast';
 import { useBoardStore } from './store/boardStore';
 import { readBackup, startBackup } from './store/backup';
@@ -22,8 +25,11 @@ export function App() {
 
   return (
     <div className="app">
-      <MainToolbar />
       <Board />
+      <FilePill />
+      <SessionBar />
+      <ToolDock />
+      <ZoomCluster />
       <Toast />
     </div>
   );
