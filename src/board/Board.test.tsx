@@ -3,6 +3,7 @@ import { Board } from './Board';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { createCard, createEmptyBoard } from '../model/types';
+import { DRAG_CANCEL_EVENT } from './useDrag';
 
 beforeEach(() => {
   useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
@@ -78,6 +79,39 @@ test('double-tap on empty canvas creates a card', () => {
   vi.advanceTimersByTime(100);
   tap();
   expect(useBoardStore.getState().board.cards).toHaveLength(1);
-  expect(useBoardStore.getState().board.cards[0]).toMatchObject({ x: 200, y: 240 });
+  const newCard = useBoardStore.getState().board.cards[0];
+  expect(newCard).toMatchObject({ x: 200, y: 240 });
+  expect(useBoardStore.getState().selection).toEqual([newCard.id]);
+  expect(useUiStore.getState().editingId).toBe(newCard.id);
+  vi.useRealTimers();
+});
+
+test('a moved touch band drag followed by a touch tap at the release point creates no card', () => {
+  vi.useFakeTimers();
+  render(<Board />);
+  const board = screen.getByTestId('board');
+  mockRect(board);
+  fireEvent.pointerDown(board, { clientX: 100, clientY: 100, button: 0, isPrimary: true, pointerId: 1, pointerType: 'touch' });
+  fireEvent.pointerMove(window, { clientX: 200, clientY: 200, pointerId: 1, pointerType: 'touch' });
+  fireEvent.pointerUp(window, { clientX: 200, clientY: 200, pointerId: 1, pointerType: 'touch' });
+  vi.advanceTimersByTime(100);
+  fireEvent.pointerDown(board, { clientX: 200, clientY: 200, button: 0, isPrimary: true, pointerId: 2, pointerType: 'touch' });
+  fireEvent.pointerUp(window, { clientX: 200, clientY: 200, pointerId: 2, pointerType: 'touch' });
+  expect(useBoardStore.getState().board.cards).toHaveLength(0);
+  vi.useRealTimers();
+});
+
+test('a touch tap right after a pinch-cancelled gesture creates no card', () => {
+  vi.useFakeTimers();
+  render(<Board />);
+  const board = screen.getByTestId('board');
+  mockRect(board);
+  fireEvent.pointerDown(board, { clientX: 300, clientY: 300, button: 0, isPrimary: true, pointerId: 1, pointerType: 'touch' });
+  window.dispatchEvent(new Event(DRAG_CANCEL_EVENT));
+  fireEvent.pointerUp(window, { clientX: 300, clientY: 300, pointerId: 1, pointerType: 'touch' });
+  vi.advanceTimersByTime(100);
+  fireEvent.pointerDown(board, { clientX: 300, clientY: 300, button: 0, isPrimary: true, pointerId: 2, pointerType: 'touch' });
+  fireEvent.pointerUp(window, { clientX: 300, clientY: 300, pointerId: 2, pointerType: 'touch' });
+  expect(useBoardStore.getState().board.cards).toHaveLength(0);
   vi.useRealTimers();
 });

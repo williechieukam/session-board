@@ -56,7 +56,10 @@ export function Board() {
   }, { threshold: 0, buttons: [0, 1] });
 
   const [band, setBand] = useState<Rect | null>(null);
-  const bandStart = useRef<{ origin: Point; shift: boolean }>({ origin: { x: 0, y: 0 }, shift: false });
+  const bandStart = useRef<{ origin: Point; shift: boolean; pointerType: string; clientX: number; clientY: number }>(
+    { origin: { x: 0, y: 0 }, shift: false, pointerType: 'mouse', clientX: 0, clientY: 0 },
+  );
+  const lastTouchTap = useRef<{ t: number; x: number; y: number } | null>(null);
 
   const toLocal = (clientX: number, clientY: number): Point => {
     const rect = containerRef.current!.getBoundingClientRect();
@@ -64,12 +67,30 @@ export function Board() {
   };
 
   const onBandDown = useDrag({
-    onStart: (e) => { bandStart.current = { origin: toLocal(e.clientX, e.clientY), shift: e.shiftKey }; },
+    onStart: (e) => {
+      bandStart.current = { origin: toLocal(e.clientX, e.clientY), shift: e.shiftKey, pointerType: e.pointerType, clientX: e.clientX, clientY: e.clientY };
+    },
     onMove: (_dx, _dy, e) => setBand(normalizeRect(bandStart.current.origin, toLocal(e.clientX, e.clientY))),
     onEnd: (dx, dy, moved) => {
       setBand(null);
       const st = useBoardStore.getState();
-      if (!moved) { st.setSelection([]); return; }
+      if (!moved) {
+        const s = bandStart.current;
+        if (s.pointerType === 'touch') {
+          const x = s.clientX + dx;
+          const y = s.clientY + dy;
+          const now = Date.now();
+          const prev = lastTouchTap.current;
+          if (prev && now - prev.t < 300 && Math.hypot(x - prev.x, y - prev.y) < 24) {
+            lastTouchTap.current = null;
+            createCardCentredAt(clientToBoard(containerRef.current as HTMLElement, x, y, st.board.viewport));
+            return;
+          }
+          lastTouchTap.current = { t: now, x, y };
+        }
+        st.setSelection([]);
+        return;
+      }
       const o = bandStart.current.origin;
       const screenRect = normalizeRect(o, { x: o.x + dx, y: o.y + dy });
       const v = st.board.viewport;
@@ -78,7 +99,7 @@ export function Board() {
       const hits = st.board.cards.filter((c) => rectsIntersect(c, boardRect)).map((c) => c.id);
       st.setSelection(bandStart.current.shift ? Array.from(new Set([...st.selection, ...hits])) : hits);
     },
-    onCancel: () => setBand(null),
+    onCancel: () => { setBand(null); lastTouchTap.current = null; },
   });
 
   const isEmptyCanvas = (e: React.PointerEvent) =>
@@ -92,18 +113,6 @@ export function Board() {
 
   const pinch = usePinch(containerRef);
 
-  const lastTap = useRef<{ t: number; x: number; y: number } | null>(null);
-  const onPointerUp = (e: React.PointerEvent) => {
-    if (e.pointerType !== 'touch' || !isEmptyCanvas(e)) return;
-    const now = Date.now();
-    const prev = lastTap.current;
-    lastTap.current = { t: now, x: e.clientX, y: e.clientY };
-    if (prev && now - prev.t < 300 && Math.hypot(e.clientX - prev.x, e.clientY - prev.y) < 24) {
-      lastTap.current = null;
-      createCardCentredAt(clientToBoard(e.currentTarget as HTMLElement, e.clientX, e.clientY, useBoardStore.getState().board.viewport));
-    }
-  };
-
   const onDoubleClick = (e: React.MouseEvent) => {
     const t = e.target as HTMLElement;
     if (t !== e.currentTarget && !t.classList.contains('board-content')) return;
@@ -116,7 +125,6 @@ export function Board() {
       className={'board' + (spaceHeld ? ' panning' : '')}
       data-testid="board"
       onPointerDown={onPointerDown}
-      onPointerUp={onPointerUp}
       onPointerDownCapture={pinch.onPointerDownCapture}
       onPointerMoveCapture={pinch.onPointerMoveCapture}
       onPointerUpCapture={pinch.onPointerUpCapture}
