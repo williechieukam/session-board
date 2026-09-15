@@ -155,7 +155,7 @@ When a single zone is selected, the toolbar offers zone colour and delete.
 
 ### Main toolbar
 
-Fixed at the top of the screen: board name (editable), New card, New zone,
+Fixed at the top of the screen: board name (editable), New board, New card, New zone,
 Undo, Redo, Zoom out / reset / in, Save, Load, Export PNG, Timer.
 
 "New zone" creates a zone centred in the viewport and selects it, so it can be
