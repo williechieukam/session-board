@@ -1,4 +1,4 @@
-import { CARD_COLORS, ZONE_COLORS, type Board, type Card, type Zone } from './types';
+import { CARD_COLORS, ZONE_COLORS, ZOOM_MAX, ZOOM_MIN, type Board, type Card, type Zone } from './types';
 
 export type ValidationResult = { ok: true; board: Board } | { ok: false; error: string };
 
@@ -50,7 +50,8 @@ export function validateBoard(input: unknown): ValidationResult {
       name: input.name,
       cards: input.cards as Card[],
       zones: input.zones as Zone[],
-      viewport: { x: vp.x, y: vp.y, zoom: vp.zoom },
+      // Clamp so a zero, negative, or huge zoom cannot break the view (also covers backup restore).
+      viewport: { x: vp.x, y: vp.y, zoom: Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, vp.zoom)) },
     },
   };
 }

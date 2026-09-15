@@ -49,3 +49,17 @@ test('rejects missing arrays and bad viewport', () => {
   c.viewport = { x: 0, y: 0, zoom: 'big' };
   expect(validateBoard(c).ok).toBe(false);
 });
+
+test('clamps viewport zoom into the supported range', () => {
+  const load = (zoom: number) => {
+    const b = good();
+    b.viewport = { x: 5, y: 6, zoom };
+    const r = validateBoard(b);
+    if (!r.ok) throw new Error(r.error);
+    return r.board.viewport;
+  };
+  expect(load(0)).toEqual({ x: 5, y: 6, zoom: 0.25 });
+  expect(load(-2).zoom).toBe(0.25);
+  expect(load(10).zoom).toBe(3);
+  expect(load(1.5).zoom).toBe(1.5);
+});
