@@ -1,3 +1,9 @@
+import { Board } from './board/Board';
+
 export function App() {
-  return <div className="app">Card Board</div>;
+  return (
+    <div className="app">
+      <Board />
+    </div>
+  );
 }
