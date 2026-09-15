@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { clearBackup } from '../store/backup';
@@ -45,6 +46,9 @@ export function MainToolbar() {
   const onExport = async () => {
     const content = boardContainer.el?.querySelector<HTMLElement>('.board-content');
     if (!content) return;
+    // Commit an open card or label editor and render it, so the raster shows the text, not the textarea.
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && active !== document.body) flushSync(() => active.blur());
     try {
       await exportBoardPng(content, st().board);
     } catch (err) {

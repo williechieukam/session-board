@@ -2,7 +2,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MainToolbar } from './MainToolbar';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
-import { createEmptyBoard } from '../model/types';
+import { createCard, createEmptyBoard } from '../model/types';
+import { Card } from '../board/Card';
 import * as fileIo from '../io/file';
 import { exportBoardPng } from '../io/exportImage';
 import { boardContainer } from '../board/actions';
@@ -92,5 +93,28 @@ test('export toasts on failure', async () => {
   render(<MainToolbar />);
   fireEvent.click(screen.getByLabelText('Export PNG'));
   await waitFor(() => expect(useUiStore.getState().toast).toBe('Export failed: The board is empty'));
+  boardContainer.el = null;
+});
+
+test('export commits an open card edit before rasterising', async () => {
+  const card = createCard({ x: 0, y: 0, text: 'old' }, 1);
+  useBoardStore.setState((s) => ({ board: { ...s.board, cards: [card] } }));
+  useUiStore.setState({ editingId: card.id });
+  const { container } = render(<><MainToolbar /><div className="board-content"><Card card={card} /></div></>);
+  boardContainer.el = container as HTMLDivElement;
+  const ta = screen.getByRole('textbox', { name: '' }) as HTMLTextAreaElement;
+  expect(document.activeElement).toBe(ta);
+  fireEvent.change(ta, { target: { value: 'committed' } });
+  let seen: { editingId: string | null; text: string; editorInDom: boolean } | null = null;
+  vi.mocked(exportBoardPng).mockReset().mockImplementation(async (_content, board) => {
+    seen = {
+      editingId: useUiStore.getState().editingId,
+      text: board.cards[0].text,
+      editorInDom: container.querySelector('textarea') !== null,
+    };
+  });
+  fireEvent.click(screen.getByLabelText('Export PNG'));
+  await waitFor(() => expect(exportBoardPng).toHaveBeenCalledTimes(1));
+  expect(seen).toEqual({ editingId: null, text: 'committed', editorInDom: false });
   boardContainer.el = null;
 });
