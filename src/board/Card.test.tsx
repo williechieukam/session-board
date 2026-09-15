@@ -93,3 +93,30 @@ test('drag moves all selected cards by screen delta divided by zoom', () => {
   expect(cards.find((c) => c.id === b.id)).toMatchObject({ x: 120, y: 110 });
   expect(useBoardStore.getState().history.past).toHaveLength(1);
 });
+
+test('resize handle appears when selected and resizes on drag', () => {
+  const a = createCard({ x: 0, y: 0 }, 1);
+  useBoardStore.setState((s) => ({ board: { ...s.board, cards: [a], viewport: { x: 0, y: 0, zoom: 1 } } }));
+  const { rerender } = render(<Card card={a} />);
+  expect(screen.queryByTestId('resize-handle')).toBeNull();
+  useBoardStore.setState({ selection: [a.id] });
+  rerender(<Card card={a} />);
+  const handle = screen.getByTestId('resize-handle');
+  down(handle, 200, 120);
+  fireEvent.pointerMove(window, { clientX: 260, clientY: 150, pointerId: 1 });
+  expect(screen.getByTestId('card')).toHaveStyle({ width: '260px', height: '150px' });
+  fireEvent.pointerUp(window, { clientX: 260, clientY: 150, pointerId: 1 });
+  expect(useBoardStore.getState().board.cards[0]).toMatchObject({ width: 260, height: 150 });
+  expect(useBoardStore.getState().selection).toEqual([a.id]);
+});
+
+test('resize clamps to minimum size', () => {
+  const a = createCard({ x: 0, y: 0 }, 1);
+  useBoardStore.setState((s) => ({ board: { ...s.board, cards: [a] }, selection: [a.id] }));
+  render(<Card card={a} />);
+  down(screen.getByTestId('resize-handle'), 200, 120);
+  fireEvent.pointerMove(window, { clientX: 0, clientY: 0, pointerId: 1 });
+  expect(screen.getByTestId('card')).toHaveStyle({ width: '80px', height: '60px' });
+  fireEvent.pointerUp(window, { clientX: 0, clientY: 0, pointerId: 1 });
+  expect(useBoardStore.getState().board.cards[0]).toMatchObject({ width: 80, height: 60 });
+});

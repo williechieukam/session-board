@@ -1,6 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type React from 'react';
-import type { Card as CardModel } from '../model/types';
+import { CARD_MIN_SIZE, type Rect, type Card as CardModel } from '../model/types';
 import { CARD_PALETTE } from '../model/palette';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
@@ -42,6 +42,37 @@ export function Card({ card }: { card: CardModel }) {
     onCancel: () => useUiStore.getState().setDragOffset(null),
   });
 
+  const [resizeRect, setResizeRect] = useState<Rect | null>(null);
+  const resizeStart = useRef<Rect>({ x: 0, y: 0, width: 0, height: 0 });
+
+  const onResizeDown = useDrag({
+    onStart: (e) => {
+      e.stopPropagation();
+      resizeStart.current = { x: card.x, y: card.y, width: card.width, height: card.height };
+    },
+    onMove: (dx, dy) => {
+      const z = zoom();
+      const s = resizeStart.current;
+      setResizeRect({
+        x: s.x, y: s.y,
+        width: Math.max(CARD_MIN_SIZE.width, s.width + dx / z),
+        height: Math.max(CARD_MIN_SIZE.height, s.height + dy / z),
+      });
+    },
+    onEnd: (dx, dy, moved) => {
+      setResizeRect(null);
+      if (!moved) return;
+      const z = zoom();
+      const s = resizeStart.current;
+      useBoardStore.getState().resizeItem(card.id, {
+        x: s.x, y: s.y,
+        width: Math.max(CARD_MIN_SIZE.width, s.width + dx / z),
+        height: Math.max(CARD_MIN_SIZE.height, s.height + dy / z),
+      });
+    },
+    onCancel: () => setResizeRect(null),
+  });
+
   const onPointerDown = (e: React.PointerEvent) => {
     e.stopPropagation();
     onDragDown(e);
@@ -52,7 +83,12 @@ export function Card({ card }: { card: CardModel }) {
       className={'card' + (selected ? ' selected' : '')}
       data-testid="card"
       data-id={card.id}
-      style={{ left: x, top: y, width: card.width, height: card.height, zIndex: card.zIndex, background: palette.bg, borderColor: palette.border }}
+      style={{
+        left: x, top: y,
+        width: resizeRect?.width ?? card.width,
+        height: resizeRect?.height ?? card.height,
+        zIndex: card.zIndex, background: palette.bg, borderColor: palette.border,
+      }}
       onPointerDown={onPointerDown}
     >
       <div className="card-text">{card.text}</div>
@@ -61,6 +97,9 @@ export function Card({ card }: { card: CardModel }) {
           {Array.from({ length: dots }, (_, i) => <span key={i} className="vote-dot" />)}
           {card.votes > 10 && <span className="vote-badge">{card.votes}</span>}
         </div>
+      )}
+      {selected && (
+        <div className="resize-handle no-export" data-testid="resize-handle" onPointerDown={(e) => { e.stopPropagation(); onResizeDown(e); }} />
       )}
     </div>
   );
