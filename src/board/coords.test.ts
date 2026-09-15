@@ -1,4 +1,4 @@
-import { screenToBoard, boardToScreen, zoomAround, clampZoom, normalizeRect, rectsIntersect, boundsOf, countCentresInside } from './coords';
+import { screenToBoard, boardToScreen, zoomAround, clampZoom, normalizeRect, rectsIntersect, boundsOf, countCentresInside, fitViewport } from './coords';
 
 const vp = { x: 100, y: 50, zoom: 2 };
 
@@ -48,4 +48,17 @@ test('countCentresInside counts rects by their centre', () => {
   const halfIn = { x: -20, y: 40, width: 60, height: 20 };       // centre (10, 50): inside
   expect(countCentresInside([inside, straddling, halfIn], area)).toBe(2);
   expect(countCentresInside([], area)).toBe(0);
+});
+
+test('fitViewport centres the rect inside the margins and caps the zoom', () => {
+  const size = { width: 1000, height: 800 };
+  const m = { top: 100, right: 50, bottom: 100, left: 50 };           // area 900 x 600, centre (500, 400)
+  const vp = fitViewport({ x: 0, y: 0, width: 300, height: 100 }, size, m, 2.3);
+  expect(vp.zoom).toBeCloseTo(2.3);                                    // fit would be 3, capped at 2.3
+  expect(vp.x).toBeCloseTo(500 - 150 * 2.3);
+  expect(vp.y).toBeCloseTo(400 - 50 * 2.3);
+  const big = fitViewport({ x: 100, y: 100, width: 1800, height: 600 }, size, m, 2.3);
+  expect(big.zoom).toBeCloseTo(0.5);                                   // min(900 / 1800, 600 / 600)
+  expect(big.x).toBeCloseTo(500 - 1000 * 0.5);
+  expect(fitViewport({ x: 0, y: 0, width: 100000, height: 10 }, size, m, 2.3).zoom).toBe(0.25);
 });

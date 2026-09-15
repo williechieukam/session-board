@@ -1,7 +1,7 @@
 import { CARD_DEFAULT_SIZE, ZONE_DEFAULT_SIZE, type Viewport } from '../model/types';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
-import { screenToBoard, zoomAround, type Point } from './coords';
+import { boundsOf, fitViewport, screenToBoard, zoomAround, type Point } from './coords';
 
 /** The mounted board container; Board.tsx sets this in an effect. */
 export const boardContainer: { el: HTMLDivElement | null } = { el: null };
@@ -12,12 +12,16 @@ export function clientToBoard(container: HTMLElement, clientX: number, clientY: 
   return screenToBoard({ x: clientX - rect.left, y: clientY - rect.top }, vp);
 }
 
+/** Size of the mounted board, falling back to the window when none is mounted or it has no layout (jsdom). */
+export function boardSize(): { width: number; height: number } {
+  const el = boardContainer.el;
+  return { width: el?.clientWidth || window.innerWidth, height: el?.clientHeight || window.innerHeight };
+}
+
 /** Board-space point at the centre of the visible board. */
 export function viewportCentre(): Point {
-  const el = boardContainer.el;
-  const w = el ? el.clientWidth : window.innerWidth;
-  const h = el ? el.clientHeight : window.innerHeight;
-  return screenToBoard({ x: w / 2, y: h / 2 }, useBoardStore.getState().board.viewport);
+  const { width, height } = boardSize();
+  return screenToBoard({ x: width / 2, y: height / 2 }, useBoardStore.getState().board.viewport);
 }
 
 /** Create a card centred on a board-space point, select it, and start editing. Returns the id. */
@@ -39,8 +43,8 @@ export function createZoneCentred(): string {
 }
 
 function containerCentre(): Point {
-  const el = boardContainer.el;
-  return { x: (el ? el.clientWidth : window.innerWidth) / 2, y: (el ? el.clientHeight : window.innerHeight) / 2 };
+  const { width, height } = boardSize();
+  return { x: width / 2, y: height / 2 };
 }
 
 /** Zoom the viewport by a factor around the centre of the board container. */
@@ -53,4 +57,12 @@ export function zoomBy(factor: number): void {
 export function zoomReset(): void {
   const st = useBoardStore.getState();
   st.setViewport(zoomAround(st.board.viewport, 1 / st.board.viewport.zoom, containerCentre()));
+}
+
+/** Fit every card and zone into the board with a 64 px margin, never zooming past 100 %. Does nothing on an empty board. */
+export function zoomToFit(): void {
+  const st = useBoardStore.getState();
+  const bounds = boundsOf([...st.board.cards, ...st.board.zones]);
+  if (!bounds) return;
+  st.setViewport(fitViewport(bounds, boardSize(), { top: 64, right: 64, bottom: 64, left: 64 }, 1));
 }

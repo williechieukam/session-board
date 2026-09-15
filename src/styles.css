@@ -102,3 +102,42 @@ button, input, textarea { font: inherit; color: inherit; }
 .timer.warning .timer-display { color: #c53030; }
 .timer.done { animation: timer-flash 0.6s step-end 6; }
 @keyframes timer-flash { 50% { background: #fed7d7; } }
+
+/* ===== Chrome primitives ===== */
+.panel { background: var(--panel); border-radius: 14px; box-shadow: var(--shadow-panel); display: flex; align-items: center; }
+.icon { display: block; flex: none; }
+.icon-btn {
+  position: relative; flex: none; width: 40px; height: 40px; display: grid; place-items: center;
+  border: 0; border-radius: 10px; background: transparent; color: var(--ink); cursor: pointer;
+  transition: background-color 150ms var(--ease-out);
+}
+.icon-btn:hover:not(:disabled) { background: var(--hover); }
+.icon-btn:active:not(:disabled) { background: var(--primary-soft); }
+.icon-btn:disabled { opacity: 0.45; cursor: default; }
+:where(button, input, [role="menuitem"]):focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.divider { flex: none; width: 1px; height: 22px; margin: 0 4px; background: var(--line); }
+
+/* Tooltips: above the button by default; .tip-below flips them for chrome at the top. */
+.tip {
+  position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translateX(-50%);
+  display: flex; gap: 8px; align-items: center; white-space: nowrap; pointer-events: none;
+  background: var(--ink); color: var(--panel); font-size: 12px; font-weight: 700; padding: 5px 8px; border-radius: 7px;
+  opacity: 0; visibility: hidden; transition: opacity 150ms var(--ease-out), visibility 0s linear 150ms;
+}
+.tip kbd { font-family: var(--font-mono); font-weight: 500; opacity: 0.75; }
+.tip-below .tip { bottom: auto; top: calc(100% + 10px); }
+.icon-btn:hover .tip, .icon-btn:focus-visible .tip { opacity: 1; visibility: visible; transition-delay: 400ms, 400ms; }
+
+/* ===== Tool dock and zoom cluster ===== */
+.dock { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); padding: 6px; gap: 2px; border-radius: 16px; z-index: var(--z-chrome); }
+.zoom-cluster { position: fixed; right: 16px; bottom: 16px; height: 46px; padding: 0 3px; z-index: var(--z-chrome); }
+.zoom-cluster .icon-btn { width: 38px; height: 38px; }
+.zoom-value {
+  width: 52px; height: 38px; border: 0; border-radius: 10px; background: transparent; cursor: pointer;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums;
+}
+.zoom-value:hover { background: var(--hover); }
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn, .tip { transition: none; }
+}

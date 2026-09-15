@@ -53,3 +53,19 @@ export function countCentresInside(rects: Rect[], area: Rect): number {
   }
   return n;
 }
+
+export interface Margins { top: number; right: number; bottom: number; left: number }
+
+/**
+ * Viewport that fits `rect` into a `size` box, centred in the area inside `margins`.
+ * The zoom is the fit zoom capped at `maxZoom`, then clamped to the zoom range.
+ */
+export function fitViewport(rect: Rect, size: { width: number; height: number }, margins: Margins, maxZoom: number): Viewport {
+  const availW = Math.max(1, size.width - margins.left - margins.right);
+  const availH = Math.max(1, size.height - margins.top - margins.bottom);
+  const fit = Math.min(availW / Math.max(rect.width, 1), availH / Math.max(rect.height, 1));
+  const zoom = clampZoom(Math.min(fit, maxZoom));
+  const cx = margins.left + availW / 2;
+  const cy = margins.top + availH / 2;
+  return { zoom, x: cx - (rect.x + rect.width / 2) * zoom, y: cy - (rect.y + rect.height / 2) * zoom };
+}

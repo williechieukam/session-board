@@ -74,3 +74,12 @@ test('a held arrow key nudges as one undo step; separate presses are separate st
   expect(st().board.cards[0].x).toBe(7);
   expect(st().history.past.length).toBe(before + 3);
 });
+
+test('Z creates a zone at the viewport centre and selects it', () => {
+  render(<Probe />);
+  fireEvent.keyDown(window, { key: 'z' });
+  expect(st().board.zones).toHaveLength(1);
+  expect(st().selection).toEqual([st().board.zones[0].id]);
+  fireEvent.keyDown(window, { key: 'z', ctrlKey: true });   // Ctrl+Z still undoes instead of adding a zone
+  expect(st().board.zones).toHaveLength(0);
+});

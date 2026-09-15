@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
-import { createCardCentredAt, viewportCentre } from './actions';
+import { createCardCentredAt, createZoneCentred, viewportCentre } from './actions';
 
 export function isTextTarget(t: EventTarget | null): boolean {
   return t instanceof HTMLElement && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
@@ -43,7 +43,8 @@ export function useKeyboardShortcuts(): void {
         st.moveItems(st.selection, arrow[0] * step, arrow[1] * step, { coalesce: e.repeat });
         return;
       }
-      if (key === 'n') { e.preventDefault(); createCardCentredAt(viewportCentre()); }
+      if (key === 'n') { e.preventDefault(); createCardCentredAt(viewportCentre()); return; }
+      if (key === 'z') { e.preventDefault(); createZoneCentred(); return; }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
