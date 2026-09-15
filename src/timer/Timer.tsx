@@ -80,14 +80,14 @@ export function Timer() {
   return (
     <div ref={rootRef} className="timer-wrap">
       <div className={`panel timer ${state}${urgent ? ' urgent' : ''}`} data-testid="timer">
-        <button type="button" className="timer-main" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <button type="button" className="timer-main" aria-label="Timer settings" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
           <ClockIcon />
           {state === 'idle' ? (
             <span className="t-label">{label || 'Timer'}</span>
           ) : (
             <>
               {label && <span className="t-label">{label}</span>}
-              <span className="t-time" data-testid="timer-display">{formatTime(remaining)}</span>
+              <span className="t-time" role="timer" data-testid="timer-display">{formatTime(remaining)}</span>
               {state === 'done' && <span className="t-done">Time’s up</span>}
             </>
           )}

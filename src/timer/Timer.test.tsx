@@ -77,6 +77,16 @@ test('custom minutes, urgent under 30 s, done at zero with a single beep', () =>
   expect(start).toHaveBeenCalledTimes(1);
 });
 
+test('the settings toggle has a stable accessible name, and the display is a live timer role', () => {
+  render(<Timer />);
+  expect(screen.getByRole('button', { name: 'Timer settings' })).toBeInTheDocument();
+  openSettings();
+  fireEvent.click(screen.getByText('5 min'));
+  fireEvent.click(screen.getByText('Start'));
+  expect(screen.getByRole('button', { name: 'Timer settings' })).toBeInTheDocument();
+  expect(screen.getByRole('timer')).toHaveTextContent('05:00');
+});
+
 test('Escape and a pointerdown outside close the settings', () => {
   render(<><Timer /><button type="button">elsewhere</button></>);
   openSettings();
