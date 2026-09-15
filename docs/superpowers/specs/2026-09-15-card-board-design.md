@@ -244,7 +244,7 @@ touching components. Stable UUIDs on every item make merging possible.
 
 ```
 card-board/
-  package.json          Vite + React 18 + TypeScript
+  package.json          Vite + React 19 + TypeScript
   src/
     main.tsx
     App.tsx             layout: main toolbar, board, timer
@@ -275,8 +275,9 @@ card-board/
     e2e/                Playwright
 ```
 
-Dependencies: react, react-dom, zustand, immer, html-to-image, uuid. Dev:
-vite, typescript, vitest, @testing-library/react, playwright.
+Dependencies: react, react-dom, zustand, immer, html-to-image. IDs come from
+`crypto.randomUUID()`. Dev: vite, typescript, vitest, @testing-library/react,
+playwright.
 
 ## 9. Testing
 
