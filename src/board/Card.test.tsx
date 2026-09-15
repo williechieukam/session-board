@@ -16,15 +16,23 @@ test('renders text, position, colour and votes', () => {
   const el = screen.getByTestId('card');
   expect(el).toHaveTextContent('Idea');
   expect(el).toHaveStyle({ left: '10px', top: '20px', width: '200px', height: '120px' });
-  expect(el.style.background).toContain(hex2rgb(CARD_PALETTE.pink.bg));
-  expect(el.querySelectorAll('.vote-dot')).toHaveLength(3);
-  expect(el.querySelector('.vote-badge')).toBeNull();
+  expect(el.style.getPropertyValue('--note')).toBe(CARD_PALETTE.pink.bg);
+  expect(el.style.getPropertyValue('--note-edge')).toBe(CARD_PALETTE.pink.border);
+  expect(el).toHaveAttribute('data-color', 'pink');
+  expect(el.querySelectorAll('.vote-sticker')).toHaveLength(3);
+  expect(el.querySelector('.vote-count')).toHaveTextContent('3');
 });
 
-test('caps dots at 10 and shows a badge', () => {
+test('caps stickers at 6 and always shows the count', () => {
   render(<Card card={createCard({ x: 0, y: 0, votes: 12 }, 1)} />);
-  expect(screen.getByTestId('card').querySelectorAll('.vote-dot')).toHaveLength(10);
-  expect(screen.getByTestId('card').querySelector('.vote-badge')).toHaveTextContent('12');
+  const el = screen.getByTestId('card');
+  expect(el.querySelectorAll('.vote-sticker')).toHaveLength(6);
+  expect(el.querySelector('.vote-count')).toHaveTextContent('12');
+});
+
+test('no vote row without votes', () => {
+  render(<Card card={createCard({ x: 0, y: 0 }, 1)} />);
+  expect(screen.getByTestId('card').querySelector('.card-votes')).toBeNull();
 });
 
 test('selected class and drag offset', () => {
@@ -36,11 +44,6 @@ test('selected class and drag offset', () => {
   expect(el).toHaveClass('selected');
   expect(el).toHaveStyle({ left: '15px', top: '15px' });
 });
-
-function hex2rgb(hex: string) {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
-}
 
 import { fireEvent } from '@testing-library/react';
 

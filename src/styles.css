@@ -1,56 +1,94 @@
+/* ===== Tokens (spec section 3) ===== */
+:root {
+  --wall: oklch(0.955 0.005 232);
+  --wall-dot: oklch(0.845 0.01 232);
+  --panel: oklch(1 0 0);
+  --ink: oklch(0.24 0.02 240);
+  --muted: oklch(0.47 0.02 240);
+  --line: oklch(0.905 0.006 240);
+  --primary: oklch(0.44 0.10 232);
+  --primary-soft: oklch(0.93 0.035 232);
+  --hover: oklch(0.965 0.006 240);
+  --sticker: oklch(0.58 0.19 27);
+  --coral-deep: oklch(0.54 0.19 27);
+  --shadow-panel: 0 1px 2px oklch(0.3 0.03 240 / 0.08), 0 10px 28px -10px oklch(0.3 0.03 240 / 0.22);
+  --shadow-note: 0 0 0 1px oklch(0.3 0.03 240 / 0.06), 0 1px 1px oklch(0.3 0.03 240 / 0.08), 0 10px 16px -10px oklch(0.3 0.03 240 / 0.38);
+  --ease-out: cubic-bezier(.25, 1, .5, 1);
+  --font-ui: 'Atkinson Hyperlegible Next Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Atkinson Hyperlegible Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --z-chrome: 100;
+  --z-selection-toolbar: 150;
+  --z-popover: 200;
+  --z-toast: 300;
+}
+
+/* ===== Base ===== */
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
-body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; color: #1f2933; background: #f5f6f8; overflow: hidden; }
+body { font-family: var(--font-ui); font-size: 14px; color: var(--ink); background: var(--wall); overflow: hidden; -webkit-font-smoothing: antialiased; }
+button, input, textarea { font: inherit; color: inherit; }
 .app { height: 100%; display: flex; flex-direction: column; }
 
-.board { position: relative; flex: 1; overflow: hidden; touch-action: none; user-select: none; background: #f5f6f8;
-  background-image: radial-gradient(#d5d9de 1px, transparent 1px); background-size: 24px 24px; cursor: default; }
+/* ===== Board ===== */
+.board {
+  position: relative; flex: 1; overflow: hidden; touch-action: none; user-select: none; cursor: default;
+  background-color: var(--wall);
+  background-image: radial-gradient(circle, var(--wall-dot) 1.1px, transparent 1.5px);
+  background-size: 24px 24px;
+}
 .board.panning { cursor: grab; }
 .board-content { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 0 0; }
+.selection-box { position: absolute; border: 1px solid var(--primary); background: oklch(0.44 0.10 232 / 0.10); pointer-events: none; }
 
-.card { position: absolute; border: 1px solid; border-radius: 6px; padding: 10px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  display: flex; flex-direction: column; cursor: grab; overflow: hidden; }
-.card.selected { outline: 2px solid #2b6cb0; outline-offset: 1px; }
-.card-text { flex: 1; white-space: pre-wrap; word-break: break-word; font-size: 15px; line-height: 1.3; overflow: hidden; }
-.card-votes { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; margin-top: 4px; }
-.vote-dot { width: 10px; height: 10px; border-radius: 50%; background: #2d3748; display: inline-block; }
-.vote-badge { font-size: 11px; font-weight: 600; margin-left: 4px; }
+/* ===== Notes ===== */
+.card {
+  position: absolute; display: flex; flex-direction: column; justify-content: space-between;
+  padding: 12px 13px 10px; border-radius: 3px 3px 12px 3px;
+  background: var(--note); box-shadow: var(--shadow-note); cursor: grab;
+}
+.card[data-color="white"] { box-shadow: 0 0 0 1px var(--note-edge), 0 1px 1px oklch(0.3 0.03 240 / 0.08), 0 10px 16px -10px oklch(0.3 0.03 240 / 0.3); }
+.card.selected { outline: 2px solid var(--primary); outline-offset: 3px; }
+.card-text { flex: 1; min-height: 0; overflow: hidden; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 20px; line-height: 1.3; font-weight: 500; }
+.card-editor { flex: 1; min-height: 0; width: 100%; resize: none; border: none; outline: none; background: transparent; padding: 0; font-size: 20px; line-height: 1.3; font-weight: 500; color: var(--ink); }
+.card-votes { display: flex; align-items: center; min-height: 16px; margin-top: 6px; }
+.vote-sticker { flex: none; width: 13px; height: 13px; border-radius: 50%; margin-right: -3px; background: var(--sticker); box-shadow: 0 0 0 2px var(--note), 0 1px 1px oklch(0.3 0.03 240 / 0.3); }
+.vote-count { margin-left: 11px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
-.resize-handle { position: absolute; right: 0; bottom: 0; width: 16px; height: 16px; cursor: nwse-resize;
-  background: linear-gradient(135deg, transparent 50%, #2b6cb0 50%); border-bottom-right-radius: 5px; }
+/* Resize handle: a 24 px touch target centred on the corner, drawing an 11 px square. */
+.resize-handle { position: absolute; right: -12px; bottom: -12px; width: 24px; height: 24px; cursor: nwse-resize; touch-action: none; }
+.resize-handle::after { content: ''; position: absolute; left: 6px; top: 6px; width: 11px; height: 11px; border-radius: 3px; background: var(--panel); border: 2px solid var(--primary); }
 
-.card-editor { flex: 1; width: 100%; resize: none; border: none; outline: none; background: transparent; font: inherit; font-size: 15px; line-height: 1.3; padding: 0; }
+/* ===== Export ===== */
+.exporting .card.selected, .exporting .zone.selected { outline: none; }
 
-.selection-box { position: absolute; border: 1px solid #2b6cb0; background: rgba(43,108,176,0.12); pointer-events: none; }
-
+/* legacy: removed in Task 2 */
 .zone { position: absolute; border: 2px dashed; border-radius: 10px; pointer-events: none; }
 .zone.selected { border-style: solid; }
 .zone-header { pointer-events: auto; display: inline-block; padding: 4px 12px; border-radius: 8px 0 8px 0; color: #fff; font-weight: 600; cursor: grab; max-width: 100%; }
 .zone-label-editor { font: inherit; border: none; outline: none; background: rgba(255,255,255,0.9); color: #1f2933; padding: 2px 6px; border-radius: 4px; }
 .zone .resize-handle { pointer-events: auto; }
+.exporting .zone.selected { border-style: dashed; }
 
-.selection-toolbar { position: absolute; display: flex; align-items: center; gap: 4px; padding: 4px 6px; background: #fff; border: 1px solid #cfd4da;
-  border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; }
+/* legacy: removed in Task 6 */
+.selection-toolbar { position: absolute; display: flex; align-items: center; gap: 4px; padding: 4px 6px; background: #fff; border: 1px solid #cfd4da; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; }
 .selection-toolbar button { border: 1px solid #cfd4da; background: #fff; border-radius: 6px; min-width: 28px; height: 28px; cursor: pointer; font-size: 14px; }
 .selection-toolbar button:hover { background: #edf2f7; }
 .selection-toolbar .swatch { width: 22px; min-width: 22px; height: 22px; border-radius: 50%; padding: 0; }
 .selection-toolbar .sep { width: 1px; height: 20px; background: #e2e8f0; margin: 0 2px; }
 
+/* legacy: removed in Task 7 */
 .main-toolbar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: #fff; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; }
 .main-toolbar button { border: 1px solid #cfd4da; background: #fff; border-radius: 6px; height: 32px; padding: 0 10px; cursor: pointer; font-size: 14px; }
 .main-toolbar button:hover:not(:disabled) { background: #edf2f7; }
 .main-toolbar button:disabled { opacity: 0.4; cursor: default; }
 .main-toolbar .sep { width: 1px; height: 24px; background: #e2e8f0; margin: 0 4px; }
 .main-toolbar .zoom-label { min-width: 56px; }
-.board-name { font-size: 16px; font-weight: 600; border: 1px solid transparent; border-radius: 6px; padding: 4px 8px; min-width: 200px; }
-.board-name:hover, .board-name:focus { border-color: #cfd4da; outline: none; }
+.main-toolbar .board-name { font-size: 16px; font-weight: 600; border: 1px solid transparent; border-radius: 6px; padding: 4px 8px; min-width: 200px; }
+.main-toolbar .board-name:hover, .main-toolbar .board-name:focus { border-color: #cfd4da; outline: none; }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #1f2933; color: #fff; padding: 10px 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 2000; }
 
-.exporting .card.selected, .exporting .zone.selected { outline: none; }
-.exporting .zone.selected { border-style: dashed; }
-
-.timer { position: fixed; right: 16px; top: 64px; background: #fff; border: 1px solid #cfd4da; border-radius: 10px; padding: 10px 14px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.18); display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 1500; }
+/* legacy: removed in Task 5 */
+.timer { position: fixed; right: 16px; top: 64px; background: #fff; border: 1px solid #cfd4da; border-radius: 10px; padding: 10px 14px; box-shadow: 0 6px 16px rgba(0,0,0,0.18); display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 1500; }
 .timer-presets, .timer-controls { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
 .timer button { border: 1px solid #cfd4da; background: #fff; border-radius: 6px; height: 28px; padding: 0 8px; cursor: pointer; }
 .timer input { width: 60px; height: 28px; border: 1px solid #cfd4da; border-radius: 6px; padding: 0 6px; }

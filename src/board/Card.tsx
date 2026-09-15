@@ -6,6 +6,9 @@ import { useBoardStore } from '../store/boardStore';
 import { useUiStore, wantsPan } from '../store/uiStore';
 import { useDrag } from './useDrag';
 
+/** Stickers drawn on a note; the count beside them carries the exact number. */
+const MAX_STICKERS = 6;
+
 function CardView({ card }: { card: CardModel }) {
   const selected = useBoardStore((s) => s.selection.includes(card.id));
   const offset = useUiStore((s) => (s.dragOffset && s.dragOffset.ids.includes(card.id) ? s.dragOffset : null));
@@ -13,7 +16,7 @@ function CardView({ card }: { card: CardModel }) {
   const palette = CARD_PALETTE[card.color];
   const x = card.x + (offset?.dx ?? 0);
   const y = card.y + (offset?.dy ?? 0);
-  const dots = Math.min(card.votes, 10);
+  const stickers = Math.min(card.votes, MAX_STICKERS);
 
   const dragIds = useRef<string[]>([]);
   const zoom = () => useBoardStore.getState().board.viewport.zoom;
@@ -91,12 +94,15 @@ function CardView({ card }: { card: CardModel }) {
       className={'card' + (selected ? ' selected' : '')}
       data-testid="card"
       data-id={card.id}
+      data-color={card.color}
       style={{
         left: x, top: y,
         width: resizeRect?.width ?? card.width,
         height: resizeRect?.height ?? card.height,
-        zIndex: card.zIndex, background: palette.bg, borderColor: palette.border,
-      }}
+        zIndex: card.zIndex,
+        '--note': palette.bg,
+        '--note-edge': palette.border,
+      } as React.CSSProperties}
       onPointerDown={onPointerDown}
       onDoubleClick={() => useUiStore.getState().setEditing(card.id)}
     >
@@ -114,8 +120,8 @@ function CardView({ card }: { card: CardModel }) {
       )}
       {card.votes > 0 && (
         <div className="card-votes">
-          {Array.from({ length: dots }, (_, i) => <span key={i} className="vote-dot" />)}
-          {card.votes > 10 && <span className="vote-badge">{card.votes}</span>}
+          {Array.from({ length: stickers }, (_, i) => <span key={i} className="vote-sticker" />)}
+          <span className="vote-count">{card.votes}</span>
         </div>
       )}
       {selected && (
