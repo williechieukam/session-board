@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import type React from 'react';
-import type { Viewport } from '../model/types';
+import type { Rect, Viewport } from '../model/types';
 import { useBoardStore } from '../store/boardStore';
-import { zoomAround } from './coords';
+import { normalizeRect, rectsIntersect, screenToBoard, zoomAround, type Point } from './coords';
 import { useDrag } from './useDrag';
 import { Card } from './Card';
+import { SelectionBox } from './SelectionBox';
 import { boardContainer, clientToBoard, createCardCentredAt } from './actions';
 
 function isTextTarget(t: EventTarget | null): boolean {
@@ -52,13 +53,39 @@ export function Board() {
     onMove: (dx, dy) => setViewport({ ...panStart.current, x: panStart.current.x + dx, y: panStart.current.y + dy }),
   }, { threshold: 0, buttons: [0, 1] });
 
+  const [band, setBand] = useState<Rect | null>(null);
+  const bandStart = useRef<{ origin: Point; shift: boolean }>({ origin: { x: 0, y: 0 }, shift: false });
+
+  const toLocal = (clientX: number, clientY: number): Point => {
+    const rect = containerRef.current!.getBoundingClientRect();
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  };
+
+  const onBandDown = useDrag({
+    onStart: (e) => { bandStart.current = { origin: toLocal(e.clientX, e.clientY), shift: e.shiftKey }; },
+    onMove: (_dx, _dy, e) => setBand(normalizeRect(bandStart.current.origin, toLocal(e.clientX, e.clientY))),
+    onEnd: (dx, dy, moved) => {
+      setBand(null);
+      const st = useBoardStore.getState();
+      if (!moved) { st.setSelection([]); return; }
+      const o = bandStart.current.origin;
+      const screenRect = normalizeRect(o, { x: o.x + dx, y: o.y + dy });
+      const v = st.board.viewport;
+      const tl = screenToBoard({ x: screenRect.x, y: screenRect.y }, v);
+      const boardRect: Rect = { x: tl.x, y: tl.y, width: screenRect.width / v.zoom, height: screenRect.height / v.zoom };
+      const hits = st.board.cards.filter((c) => rectsIntersect(c, boardRect)).map((c) => c.id);
+      st.setSelection(bandStart.current.shift ? Array.from(new Set([...st.selection, ...hits])) : hits);
+    },
+    onCancel: () => setBand(null),
+  });
+
   const isEmptyCanvas = (e: React.PointerEvent) =>
     e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('board-content');
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (!isEmptyCanvas(e)) return;
     if (e.button === 1 || spaceHeld) { onPanDown(e); return; }
-    // Rubber-band selection is added in Task 13.
+    onBandDown(e);
   };
 
   const onDoubleClick = (e: React.MouseEvent) => {
@@ -78,6 +105,7 @@ export function Board() {
       <div className="board-content" style={{ transform: `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})` }}>
         {cards.map((c) => <Card key={c.id} card={c} />)}
       </div>
+      {band && <SelectionBox rect={band} />}
     </div>
   );
 }
