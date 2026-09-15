@@ -151,3 +151,19 @@ test('selectAllCards selects cards only', () => {
   store().selectAllCards();
   expect(store().selection).toEqual([a]);
 });
+
+test('undo and redo keep the current viewport', () => {
+  const id = store().addCard({ x: 0, y: 0 });
+  const vp = { x: 300, y: -40, zoom: 1.5 };
+  store().setViewport(vp);
+  store().moveItems([id], 10, 0);
+  store().undo();
+  expect(store().board.viewport).toEqual(vp);
+  expect(store().board.cards[0].x).toBe(0);
+  store().undo();
+  expect(store().board.viewport).toEqual(vp);
+  expect(store().board.cards).toHaveLength(0);
+  store().redo();
+  expect(store().board.viewport).toEqual(vp);
+  expect(store().board.cards).toHaveLength(1);
+});

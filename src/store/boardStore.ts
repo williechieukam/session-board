@@ -58,8 +58,9 @@ export const useBoardStore = create<BoardState>()((set, get) => {
   const restore = (result: { history: History<Board>; present: Board } | null) => {
     if (!result) return;
     const ids = existingIds(result.present);
+    // Keep the current viewport: panning and zooming are never undo steps.
     set((s) => ({
-      board: result.present,
+      board: { ...result.present, viewport: s.board.viewport },
       history: result.history,
       dirty: true,
       selection: s.selection.filter((id) => ids.has(id)),
