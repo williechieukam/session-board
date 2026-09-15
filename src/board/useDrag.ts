@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type React from 'react';
 
 export const DRAG_CANCEL_EVENT = 'board:cancel-drag';
@@ -13,9 +13,15 @@ export interface DragHandlers {
 export function useDrag(handlers: DragHandlers, opts: { threshold?: number; buttons?: number[] } = {}): (e: React.PointerEvent) => void {
   const ref = useRef(handlers);
   ref.current = handlers;
+  const activeCleanup = useRef<(() => void) | null>(null);
   const threshold = opts.threshold ?? 3;
   const buttons = opts.buttons ?? [0];
 
+  useEffect(() => {
+    return () => activeCleanup.current?.();
+  }, []);
+
+  // Handlers are read through ref so they are intentionally not dependencies
   return useCallback((e: React.PointerEvent) => {
     if (!e.isPrimary || !buttons.includes(e.button)) return;
     const pointerId = e.pointerId;
@@ -34,6 +40,7 @@ export function useDrag(handlers: DragHandlers, opts: { threshold?: number; butt
       window.removeEventListener('pointercancel', onCancel);
       window.removeEventListener(DRAG_CANCEL_EVENT, onCancel);
       try { target.releasePointerCapture(pointerId); } catch { /* ignore */ }
+      activeCleanup.current = null;
     };
     const onMove = (ev: PointerEvent) => {
       if (ev.pointerId !== pointerId) return;
@@ -58,6 +65,7 @@ export function useDrag(handlers: DragHandlers, opts: { threshold?: number; butt
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onCancel);
     window.addEventListener(DRAG_CANCEL_EVENT, onCancel);
+    activeCleanup.current = cleanup;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threshold, buttons.join(',')]);
 }

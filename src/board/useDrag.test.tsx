@@ -52,3 +52,14 @@ test('cancel event aborts without onEnd', () => {
   expect(onCancel).toHaveBeenCalledTimes(1);
   expect(onEnd).not.toHaveBeenCalled();
 });
+
+test('unmount cleans up listeners mid-gesture without calling handlers', () => {
+  const onMove = vi.fn(); const onEnd = vi.fn();
+  const { getByTestId, unmount } = render(<Probe onMove={onMove} onEnd={onEnd} />);
+  fireEvent.pointerDown(getByTestId('t'), { clientX: 0, clientY: 0, button: 0, isPrimary: true, pointerId: 1 });
+  unmount();
+  fireEvent.pointerMove(window, { clientX: 50, clientY: 50, pointerId: 1 });
+  fireEvent.pointerUp(window, { clientX: 50, clientY: 50, pointerId: 1 });
+  expect(onMove).not.toHaveBeenCalled();
+  expect(onEnd).not.toHaveBeenCalled();
+});
