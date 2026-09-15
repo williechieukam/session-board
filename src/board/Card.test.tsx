@@ -7,7 +7,7 @@ import { CARD_PALETTE } from '../model/palette';
 
 beforeEach(() => {
   useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
-  useUiStore.setState({ editingId: null, dragOffset: null, toast: null, timerOpen: false });
+  useUiStore.setState({ editingId: null, dragOffset: null, toast: null });
 });
 
 test('renders text, position, colour and votes', () => {

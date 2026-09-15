@@ -14,7 +14,7 @@ vi.mock('../io/exportImage', () => ({ exportBoardPng: vi.fn() }));
 const st = () => useBoardStore.getState();
 beforeEach(() => {
   useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
-  useUiStore.setState({ editingId: null, dragOffset: null, toast: null, timerOpen: false });
+  useUiStore.setState({ editingId: null, dragOffset: null, toast: null });
   vi.mocked(fileIo.loadBoardFromFile).mockReset();
   vi.mocked(fileIo.saveBoardToFile).mockReset();
 });

@@ -7,7 +7,7 @@ import { DRAG_CANCEL_EVENT } from './useDrag';
 
 beforeEach(() => {
   useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
-  useUiStore.setState({ editingId: null, dragOffset: null, toast: null, timerOpen: false, spaceHeld: false });
+  useUiStore.setState({ editingId: null, dragOffset: null, toast: null, spaceHeld: false });
 });
 
 test('double-click on empty canvas creates a centred, selected, editing card', () => {

@@ -11,7 +11,7 @@ beforeAll(() => {
 });
 beforeEach(() => {
   useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
-  useUiStore.setState({ editingId: null, dragOffset: null, toast: null, timerOpen: false });
+  useUiStore.setState({ editingId: null, dragOffset: null, toast: null });
 });
 const down = (el: Element, x: number, y: number) => fireEvent.pointerDown(el, { clientX: x, clientY: y, button: 0, isPrimary: true, pointerId: 1 });
 

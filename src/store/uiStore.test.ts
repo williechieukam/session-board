@@ -2,7 +2,7 @@ import { useUiStore } from './uiStore';
 
 beforeEach(() => {
   vi.useFakeTimers();
-  useUiStore.setState({ editingId: null, dragOffset: null, toast: null, timerOpen: false });
+  useUiStore.setState({ editingId: null, dragOffset: null, toast: null });
 });
 afterEach(() => vi.useRealTimers());
 
@@ -18,11 +18,6 @@ test('toast clears itself after 4 seconds', () => {
   expect(useUiStore.getState().toast).toBe('Saved');
   vi.advanceTimersByTime(4000);
   expect(useUiStore.getState().toast).toBeNull();
-});
-
-test('toggleTimer flips', () => {
-  useUiStore.getState().toggleTimer();
-  expect(useUiStore.getState().timerOpen).toBe(true);
 });
 
 test('backupOff setter', () => {

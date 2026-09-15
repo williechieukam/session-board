@@ -9,7 +9,7 @@ const st = () => useBoardStore.getState();
 
 beforeEach(() => {
   useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false, nudgeRun: null });
-  useUiStore.setState({ editingId: null, dragOffset: null, toast: null, timerOpen: false });
+  useUiStore.setState({ editingId: null, dragOffset: null, toast: null });
 });
 
 test('delete, undo, redo', () => {

@@ -6,7 +6,7 @@ import { createCard, createEmptyBoard, createZone } from '../model/types';
 
 beforeEach(() => {
   useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
-  useUiStore.setState({ editingId: null, dragOffset: null, toast: null, timerOpen: false });
+  useUiStore.setState({ editingId: null, dragOffset: null, toast: null });
 });
 
 test('hidden with no selection', () => {

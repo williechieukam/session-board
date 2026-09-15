@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useBoardStore } from '../store/boardStore';
-import { useUiStore } from '../store/uiStore';
 import { createCardCentredAt, createZoneCentred, viewportCentre, zoomBy, zoomReset } from '../board/actions';
 import { exportPng, newBoard, openFromFile, saveToFile } from '../chrome/fileActions';
+import { Timer } from '../timer/Timer';
 
 export function MainToolbar() {
   const name = useBoardStore((s) => s.board.name);
@@ -44,7 +44,7 @@ export function MainToolbar() {
       <button aria-label="Save" onClick={saveToFile}>Save</button>
       <button aria-label="Load" onClick={() => void openFromFile()}>Load</button>
       <button aria-label="Export PNG" onClick={() => void exportPng()}>Export PNG</button>
-      <button aria-label="Timer" onClick={() => useUiStore.getState().toggleTimer()}>Timer</button>
+      <Timer />
     </div>
   );
 }
