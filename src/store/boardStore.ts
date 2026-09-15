@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { produce } from 'immer';
 import {
-  createCard, createEmptyBoard, CARD_MIN_SIZE, ZONE_MIN_SIZE,
-  type Board, type Card, type CardColor, type Rect,
+  createCard, createEmptyBoard, createZone, CARD_MIN_SIZE, ZONE_MIN_SIZE,
+  type Board, type Card, type CardColor, type Rect, type Zone, type ZoneColor, type Viewport,
 } from '../model/types';
 import { createHistory, record, undo as undoHistory, redo as redoHistory, type History } from './history';
 
@@ -22,6 +22,14 @@ export interface BoardState {
   duplicateCards(ids: string[]): string[];
   deleteItems(ids: string[]): void;
   bringToFront(id: string): void;
+  addZone(init: { x: number; y: number } & Partial<Zone>): string;
+  updateZoneLabel(id: string, label: string): void;
+  setZoneColor(id: string, color: ZoneColor): void;
+  setViewport(viewport: Viewport): void;
+  loadBoard(board: Board): void;
+  renameBoard(name: string): void;
+  newBoard(): void;
+  selectAllCards(): void;
   setSelection(ids: string[]): void;
   undo(): void;
   redo(): void;
@@ -156,6 +164,40 @@ export const useBoardStore = create<BoardState>()((set, get) => {
         board: { ...s.board, cards: s.board.cards.map((d) => (d.id === id ? { ...d, zIndex: top + 1 } : d)) },
         dirty: true,
       }));
+    },
+
+    addZone(init) {
+      const zone = createZone(init);
+      mutate((b) => { b.zones.push(zone); });
+      return zone.id;
+    },
+
+    updateZoneLabel(id, label) {
+      mutate((b) => { const z = b.zones.find((x) => x.id === id); if (z && z.label !== label) z.label = label; });
+    },
+
+    setZoneColor(id, color) {
+      mutate((b) => { const z = b.zones.find((x) => x.id === id); if (z && z.color !== color) z.color = color; });
+    },
+
+    setViewport(viewport) {
+      set((s) => ({ board: { ...s.board, viewport } }));
+    },
+
+    loadBoard(board) {
+      set({ board, selection: [], history: createHistory<Board>(), dirty: false });
+    },
+
+    renameBoard(name) {
+      mutate((b) => { if (b.name !== name) b.name = name; });
+    },
+
+    newBoard() {
+      get().loadBoard(createEmptyBoard());
+    },
+
+    selectAllCards() {
+      set((s) => ({ selection: s.board.cards.map((c) => c.id) }));
     },
 
     setSelection(ids) { set({ selection: ids }); },

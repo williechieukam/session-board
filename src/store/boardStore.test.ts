@@ -104,3 +104,50 @@ test('markClean clears dirty', () => {
   store().markClean();
   expect(store().dirty).toBe(false);
 });
+
+test('zone actions', () => {
+  const z = store().addZone({ x: 0, y: 0 });
+  store().updateZoneLabel(z, 'Went well');
+  store().setZoneColor(z, 'green');
+  store().moveItems([z], 3, 4);
+  store().resizeItem(z, { x: 3, y: 4, width: 10, height: 10 });
+  expect(store().board.zones[0]).toMatchObject({ label: 'Went well', color: 'green', x: 3, y: 4, width: 200, height: 150 });
+  store().deleteItems([z]);
+  expect(store().board.zones).toHaveLength(0);
+});
+
+test('setViewport is not recorded and does not dirty', () => {
+  store().setViewport({ x: 10, y: 20, zoom: 2 });
+  expect(store().board.viewport).toEqual({ x: 10, y: 20, zoom: 2 });
+  expect(store().history.past).toHaveLength(0);
+  expect(store().dirty).toBe(false);
+});
+
+test('loadBoard replaces everything and resets history and dirty', () => {
+  const id = store().addCard({ x: 0, y: 0 });
+  store().setSelection([id]);
+  const fresh = createEmptyBoard('Loaded');
+  store().loadBoard(fresh);
+  expect(store().board.name).toBe('Loaded');
+  expect(store().selection).toEqual([]);
+  expect(store().canUndo()).toBe(false);
+  expect(store().dirty).toBe(false);
+});
+
+test('renameBoard is recorded; newBoard resets', () => {
+  store().renameBoard('Sprint retro');
+  expect(store().board.name).toBe('Sprint retro');
+  expect(store().canUndo()).toBe(true);
+  store().addCard({ x: 0, y: 0 });
+  store().newBoard();
+  expect(store().board.cards).toHaveLength(0);
+  expect(store().board.name).toBe('Untitled board');
+  expect(store().canUndo()).toBe(false);
+});
+
+test('selectAllCards selects cards only', () => {
+  const a = store().addCard({ x: 0, y: 0 });
+  store().addZone({ x: 0, y: 0 });
+  store().selectAllCards();
+  expect(store().selection).toEqual([a]);
+});
