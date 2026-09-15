@@ -50,8 +50,8 @@ export function pickFile(accept: string): Promise<File | null> {
     input.type = 'file';
     input.accept = accept;
     input.style.display = 'none';
-    input.onchange = () => { pendingPicker = null; resolve(input.files?.[0] ?? null); input.remove(); };
-    input.oncancel = () => { pendingPicker = null; resolve(null); input.remove(); };
+    input.onchange = () => { if (pendingPicker?.input === input) pendingPicker = null; resolve(input.files?.[0] ?? null); input.remove(); };
+    input.oncancel = () => { if (pendingPicker?.input === input) pendingPicker = null; resolve(null); input.remove(); };
     pendingPicker = { input, resolve };
     document.body.appendChild(input);
     input.click();

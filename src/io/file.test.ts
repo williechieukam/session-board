@@ -50,3 +50,27 @@ test('pickFile settles an abandoned picker when a new one opens', async () => {
 
   vi.restoreAllMocks();
 });
+
+test('only the tracked picker clears the pending-picker slot', async () => {
+  vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {});
+
+  const a = pickFile('.json');
+  const inputA = document.body.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+
+  const b = pickFile('.json');
+  await expect(a).resolves.toBeNull();
+
+  // inputA's native dialog completes late, after it was already abandoned by b.
+  inputA.dispatchEvent(new Event('change'));
+
+  const c = pickFile('.json');
+  await expect(b).resolves.toBeNull();
+  expect(document.body.querySelectorAll('input[type="file"]')).toHaveLength(1);
+
+  const inputC = document.body.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+  inputC.dispatchEvent(new Event('cancel'));
+  await expect(c).resolves.toBeNull();
+  expect(document.body.querySelectorAll('input[type="file"]')).toHaveLength(0);
+
+  vi.restoreAllMocks();
+});
