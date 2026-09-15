@@ -63,3 +63,21 @@ test('plain click on empty canvas clears selection', () => {
   fireEvent.pointerUp(window, { clientX: 400, clientY: 400, pointerId: 1 });
   expect(useBoardStore.getState().selection).toEqual([]);
 });
+
+test('double-tap on empty canvas creates a card', () => {
+  vi.useFakeTimers();
+  render(<Board />);
+  const board = screen.getByTestId('board');
+  mockRect(board);
+  const tap = () => {
+    fireEvent.pointerDown(board, { clientX: 300, clientY: 300, button: 0, isPrimary: true, pointerId: 1, pointerType: 'touch' });
+    fireEvent.pointerUp(board, { clientX: 300, clientY: 300, pointerId: 1, pointerType: 'touch' });
+  };
+  tap();
+  expect(useBoardStore.getState().board.cards).toHaveLength(0);
+  vi.advanceTimersByTime(100);
+  tap();
+  expect(useBoardStore.getState().board.cards).toHaveLength(1);
+  expect(useBoardStore.getState().board.cards[0]).toMatchObject({ x: 200, y: 240 });
+  vi.useRealTimers();
+});

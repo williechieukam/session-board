@@ -6,6 +6,7 @@ import { normalizeRect, rectsIntersect, screenToBoard, zoomAround, type Point } 
 import { useDrag } from './useDrag';
 import { Card } from './Card';
 import { SelectionBox } from './SelectionBox';
+import { usePinch } from './usePinch';
 import { boardContainer, clientToBoard, createCardCentredAt } from './actions';
 
 function isTextTarget(t: EventTarget | null): boolean {
@@ -88,6 +89,20 @@ export function Board() {
     onBandDown(e);
   };
 
+  const pinch = usePinch(containerRef);
+
+  const lastTap = useRef<{ t: number; x: number; y: number } | null>(null);
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (e.pointerType !== 'touch' || !isEmptyCanvas(e)) return;
+    const now = Date.now();
+    const prev = lastTap.current;
+    lastTap.current = { t: now, x: e.clientX, y: e.clientY };
+    if (prev && now - prev.t < 300 && Math.hypot(e.clientX - prev.x, e.clientY - prev.y) < 24) {
+      lastTap.current = null;
+      createCardCentredAt(clientToBoard(e.currentTarget as HTMLElement, e.clientX, e.clientY, useBoardStore.getState().board.viewport));
+    }
+  };
+
   const onDoubleClick = (e: React.MouseEvent) => {
     const t = e.target as HTMLElement;
     if (t !== e.currentTarget && !t.classList.contains('board-content')) return;
@@ -100,6 +115,11 @@ export function Board() {
       className={'board' + (spaceHeld ? ' panning' : '')}
       data-testid="board"
       onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      onPointerDownCapture={pinch.onPointerDownCapture}
+      onPointerMoveCapture={pinch.onPointerMoveCapture}
+      onPointerUpCapture={pinch.onPointerUpCapture}
+      onPointerCancelCapture={pinch.onPointerUpCapture}
       onDoubleClick={onDoubleClick}
     >
       <div className="board-content" style={{ transform: `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})` }}>
