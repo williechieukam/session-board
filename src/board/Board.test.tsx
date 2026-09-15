@@ -194,3 +194,40 @@ describe('panning from cards and zones', () => {
     expect(useUiStore.getState().spaceHeld).toBe(false);
   });
 });
+
+describe('synthetic dblclick after a touch double-tap', () => {
+  function doubleTap(board: HTMLElement) {
+    for (const pointerId of [1, 2]) {
+      fireEvent.pointerDown(board, { clientX: 300, clientY: 300, button: 0, isPrimary: true, pointerId, pointerType: 'touch' });
+      fireEvent.pointerUp(board, { clientX: 300, clientY: 300, pointerId, pointerType: 'touch' });
+      vi.advanceTimersByTime(100);
+    }
+  }
+
+  test('a dblclick right after a touch double-tap creates no second card', () => {
+    vi.useFakeTimers();
+    render(<Board />);
+    const board = screen.getByTestId('board');
+    mockRect(board);
+    doubleTap(board);
+    expect(useBoardStore.getState().board.cards).toHaveLength(1);
+    fireEvent.doubleClick(board, { clientX: 300, clientY: 300 });
+    expect(useBoardStore.getState().board.cards).toHaveLength(1);
+    vi.useRealTimers();
+  });
+
+  test('a mouse double-click still creates a card, including 500 ms after a touch double-tap', () => {
+    vi.useFakeTimers();
+    render(<Board />);
+    const board = screen.getByTestId('board');
+    mockRect(board);
+    fireEvent.doubleClick(board, { clientX: 300, clientY: 300 });
+    expect(useBoardStore.getState().board.cards).toHaveLength(1);
+    doubleTap(board);
+    expect(useBoardStore.getState().board.cards).toHaveLength(2);
+    vi.advanceTimersByTime(500);
+    fireEvent.doubleClick(board, { clientX: 600, clientY: 600 });
+    expect(useBoardStore.getState().board.cards).toHaveLength(3);
+    vi.useRealTimers();
+  });
+});

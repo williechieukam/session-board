@@ -69,6 +69,8 @@ export function Board() {
     { origin: { x: 0, y: 0 }, shift: false, pointerType: 'mouse', clientX: 0, clientY: 0 },
   );
   const lastTouchTap = useRef<{ t: number; x: number; y: number } | null>(null);
+  /** When a touch double-tap last created a card; some browsers also synthesise a dblclick from the two taps. */
+  const lastTouchCreate = useRef(-Infinity);
 
   const toLocal = (clientX: number, clientY: number): Point => {
     const rect = containerRef.current!.getBoundingClientRect();
@@ -92,6 +94,7 @@ export function Board() {
           const prev = lastTouchTap.current;
           if (prev && now - prev.t < 300 && Math.hypot(x - prev.x, y - prev.y) < 24) {
             lastTouchTap.current = null;
+            lastTouchCreate.current = now;
             createCardCentredAt(clientToBoard(containerRef.current as HTMLElement, x, y, st.board.viewport));
             return;
           }
@@ -130,6 +133,7 @@ export function Board() {
   const onDoubleClick = (e: React.MouseEvent) => {
     const t = e.target as HTMLElement;
     if (t !== e.currentTarget && !t.classList.contains('board-content')) return;
+    if (Date.now() - lastTouchCreate.current < 500) return; // synthetic dblclick from a touch double-tap
     createCardCentredAt(clientToBoard(e.currentTarget as HTMLElement, e.clientX, e.clientY, useBoardStore.getState().board.viewport));
   };
 
