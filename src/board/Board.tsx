@@ -10,12 +10,10 @@ import { SelectionBox } from './SelectionBox';
 import { SelectionToolbar } from './SelectionToolbar';
 import { usePinch } from './usePinch';
 import { boardContainer, clientToBoard, createCardCentredAt } from './actions';
-
-function isTextTarget(t: EventTarget | null): boolean {
-  return t instanceof HTMLElement && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
-}
+import { isTextTarget, useKeyboardShortcuts } from './useKeyboardShortcuts';
 
 export function Board() {
+  useKeyboardShortcuts();
   const containerRef = useRef<HTMLDivElement>(null);
   const cards = useBoardStore((s) => s.board.cards);
   const zones = useBoardStore((s) => s.board.zones);
