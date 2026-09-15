@@ -11,10 +11,13 @@ export interface BoardState {
   selection: string[];
   history: History<Board>;
   dirty: boolean;
+  /** Ids moved by the current keyboard nudge run; auto-repeat nudges for these ids extend one undo entry. */
+  nudgeRun: string[] | null;
 
   addCard(init: { x: number; y: number } & Partial<Card>): string;
   updateCardText(id: string, text: string): void;
-  moveItems(ids: string[], dx: number, dy: number): void;
+  /** Pass `{ coalesce }` for keyboard nudges: `coalesce: true` extends the current nudge run instead of recording. */
+  moveItems(ids: string[], dx: number, dy: number, opts?: { coalesce?: boolean }): void;
   resizeItem(id: string, rect: Rect): void;
   setCardColor(ids: string[], color: CardColor): void;
   addVote(ids: string[]): void;
@@ -46,13 +49,18 @@ function existingIds(board: Board): Set<string> {
   return new Set([...board.cards.map((c) => c.id), ...board.zones.map((z) => z.id)]);
 }
 
+function sameIds(a: string[], b: string[]): boolean {
+  const set_ = new Set(a);
+  return a.length === b.length && b.every((id) => set_.has(id));
+}
+
 export const useBoardStore = create<BoardState>()((set, get) => {
   /** Apply a mutation to the board; record history only if something changed. */
   const mutate = (fn: (draft: Board) => void) =>
     set((s) => {
       const next = produce(s.board, fn);
       if (next === s.board) return {};
-      return { board: next, history: record(s.history, s.board), dirty: true };
+      return { board: next, history: record(s.history, s.board), dirty: true, nudgeRun: null };
     });
 
   const restore = (result: { history: History<Board>; present: Board } | null) => {
@@ -63,6 +71,7 @@ export const useBoardStore = create<BoardState>()((set, get) => {
       board: { ...result.present, viewport: s.board.viewport },
       history: result.history,
       dirty: true,
+      nudgeRun: null,
       selection: s.selection.filter((id) => ids.has(id)),
     }));
   };
@@ -72,6 +81,7 @@ export const useBoardStore = create<BoardState>()((set, get) => {
     selection: [],
     history: createHistory<Board>(),
     dirty: false,
+    nudgeRun: null,
 
     addCard(init) {
       const card = createCard(init, nextZ(get().board));
@@ -86,13 +96,24 @@ export const useBoardStore = create<BoardState>()((set, get) => {
       });
     },
 
-    moveItems(ids, dx, dy) {
+    moveItems(ids, dx, dy, opts) {
       if (dx === 0 && dy === 0) return;
       const set_ = new Set(ids);
-      mutate((b) => {
+      const apply = (b: Board) => {
         for (const c of b.cards) if (set_.has(c.id)) { c.x += dx; c.y += dy; }
         for (const z of b.zones) if (set_.has(z.id)) { z.x += dx; z.y += dy; }
-      });
+      };
+      const run = get().nudgeRun;
+      if (opts?.coalesce && run && sameIds(run, ids)) {
+        // Auto-repeat nudge: extend the run's single undo entry without recording.
+        set((s) => {
+          const next = produce(s.board, apply);
+          return next === s.board ? {} : { board: next, dirty: true };
+        });
+        return;
+      }
+      mutate(apply);
+      if (opts) set({ nudgeRun: [...ids] });
     },
 
     resizeItem(id, rect) {
@@ -186,7 +207,7 @@ export const useBoardStore = create<BoardState>()((set, get) => {
     },
 
     loadBoard(board) {
-      set({ board, selection: [], history: createHistory<Board>(), dirty: false });
+      set({ board, selection: [], history: createHistory<Board>(), dirty: false, nudgeRun: null });
     },
 
     renameBoard(name) {

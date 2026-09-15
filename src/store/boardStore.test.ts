@@ -167,3 +167,55 @@ test('undo and redo keep the current viewport', () => {
   expect(store().board.viewport).toEqual(vp);
   expect(store().board.cards).toHaveLength(1);
 });
+
+describe('coalesced nudges', () => {
+  beforeEach(() => { useBoardStore.setState({ nudgeRun: null }); });
+
+  test('one recorded nudge plus repeats is one undo step', () => {
+    const id = store().addCard({ x: 0, y: 0 });
+    const before = store().history.past.length;
+    store().moveItems([id], 1, 0, { coalesce: false });
+    for (let i = 0; i < 5; i++) store().moveItems([id], 1, 0, { coalesce: true });
+    expect(store().board.cards[0].x).toBe(6);
+    expect(store().history.past.length).toBe(before + 1);
+    store().undo();
+    expect(store().board.cards[0].x).toBe(0);
+  });
+
+  test('a coalesced nudge still marks dirty', () => {
+    const id = store().addCard({ x: 0, y: 0 });
+    store().moveItems([id], 1, 0, { coalesce: false });
+    store().markClean();
+    store().moveItems([id], 1, 0, { coalesce: true });
+    expect(store().dirty).toBe(true);
+  });
+
+  test('an unrelated mutation ends the run', () => {
+    const id = store().addCard({ x: 0, y: 0 });
+    store().moveItems([id], 1, 0, { coalesce: false });
+    store().addVote([id]);
+    const before = store().history.past.length;
+    store().moveItems([id], 1, 0, { coalesce: true });
+    expect(store().history.past.length).toBe(before + 1);
+  });
+
+  test('undo ends the run', () => {
+    const id = store().addCard({ x: 0, y: 0 });
+    store().moveItems([id], 1, 0, { coalesce: false });
+    store().undo();
+    const before = store().history.past.length;
+    store().moveItems([id], 1, 0, { coalesce: true });
+    expect(store().history.past.length).toBe(before + 1);
+  });
+
+  test('a different selection starts a new entry', () => {
+    const a = store().addCard({ x: 0, y: 0 });
+    const b = store().addCard({ x: 0, y: 0 });
+    store().moveItems([a], 1, 0, { coalesce: false });
+    const before = store().history.past.length;
+    store().moveItems([b], 1, 0, { coalesce: true });
+    expect(store().history.past.length).toBe(before + 1);
+    store().moveItems([a, b], 1, 0, { coalesce: true });
+    expect(store().history.past.length).toBe(before + 2);
+  });
+});

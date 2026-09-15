@@ -39,7 +39,8 @@ export function useKeyboardShortcuts(): void {
       if (arrow && st.selection.length) {
         e.preventDefault();
         const step = e.shiftKey ? 10 : 1;
-        st.moveItems(st.selection, arrow[0] * step, arrow[1] * step);
+        // Auto-repeat keydowns extend the first press's undo entry, so a held key is one undo step.
+        st.moveItems(st.selection, arrow[0] * step, arrow[1] * step, { coalesce: e.repeat });
         return;
       }
       if (key === 'n') { e.preventDefault(); createCardCentredAt(viewportCentre()); }

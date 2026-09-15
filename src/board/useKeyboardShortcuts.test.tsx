@@ -8,7 +8,7 @@ function Probe() { useKeyboardShortcuts(); return <textarea data-testid="ta" />;
 const st = () => useBoardStore.getState();
 
 beforeEach(() => {
-  useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
+  useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false, nudgeRun: null });
   useUiStore.setState({ editingId: null, dragOffset: null, toast: null, timerOpen: false });
 });
 
@@ -56,4 +56,21 @@ test('keys inside a text field are ignored', () => {
   fireEvent.keyDown(getByTestId('ta'), { key: 'Delete' });
   fireEvent.keyDown(getByTestId('ta'), { key: 'n' });
   expect(st().board.cards).toHaveLength(1);
+});
+
+test('a held arrow key nudges as one undo step; separate presses are separate steps', () => {
+  render(<Probe />);
+  const id = st().addCard({ x: 0, y: 0 });
+  st().setSelection([id]);
+  const before = st().history.past.length;
+  fireEvent.keyDown(window, { key: 'ArrowRight' });
+  for (let i = 0; i < 4; i++) fireEvent.keyDown(window, { key: 'ArrowRight', repeat: true });
+  expect(st().board.cards[0].x).toBe(5);
+  expect(st().history.past.length).toBe(before + 1);
+  fireEvent.keyUp(window, { key: 'ArrowRight' });
+  fireEvent.keyDown(window, { key: 'ArrowRight' });
+  fireEvent.keyUp(window, { key: 'ArrowRight' });
+  fireEvent.keyDown(window, { key: 'ArrowRight' });
+  expect(st().board.cards[0].x).toBe(7);
+  expect(st().history.past.length).toBe(before + 3);
 });
