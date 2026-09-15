@@ -1,8 +1,9 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import { Zone } from './Zone';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
-import { createEmptyBoard, createZone } from '../model/types';
+import { createCard, createEmptyBoard, createZone } from '../model/types';
+import { ZONE_PALETTE } from '../model/palette';
 
 beforeAll(() => {
   Element.prototype.setPointerCapture = () => {};
@@ -52,4 +53,25 @@ test('resize handle resizes with zone minimum', () => {
   fireEvent.pointerMove(window, { clientX: 0, clientY: 0, pointerId: 1 });
   fireEvent.pointerUp(window, { clientX: 0, clientY: 0, pointerId: 1 });
   expect(useBoardStore.getState().board.zones[0]).toMatchObject({ width: 200, height: 150 });
+});
+
+test('passes palette colours as custom properties', () => {
+  const z = createZone({ x: 0, y: 0, color: 'green' });
+  render(<Zone zone={z} />);
+  const el = screen.getByTestId('zone');
+  expect(el.style.getPropertyValue('--zone-fill')).toBe(ZONE_PALETTE.green.bg);
+  expect(el.style.getPropertyValue('--zone-edge')).toBe(ZONE_PALETTE.green.border);
+});
+
+test('header shows how many notes sit inside the zone', () => {
+  const z = createZone({ x: 0, y: 0 });                          // 600 x 400
+  const inA = createCard({ x: 10, y: 60 }, 1);
+  const inB = createCard({ x: 300, y: 200 }, 2);
+  const out = createCard({ x: 900, y: 60 }, 3);
+  useBoardStore.setState((s) => ({ board: { ...s.board, zones: [z], cards: [inA, inB, out] } }));
+  const { rerender } = render(<Zone zone={z} />);
+  expect(screen.getByTestId('zone-header')).toHaveTextContent(/2 notes$/);
+  act(() => useBoardStore.setState((s) => ({ board: { ...s.board, cards: [inA] } })));
+  rerender(<Zone zone={z} />);
+  expect(screen.getByTestId('zone-header')).toHaveTextContent(/1 note$/);
 });

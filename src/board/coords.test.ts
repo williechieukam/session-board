@@ -1,4 +1,4 @@
-import { screenToBoard, boardToScreen, zoomAround, clampZoom, normalizeRect, rectsIntersect, boundsOf } from './coords';
+import { screenToBoard, boardToScreen, zoomAround, clampZoom, normalizeRect, rectsIntersect, boundsOf, countCentresInside } from './coords';
 
 const vp = { x: 100, y: 50, zoom: 2 };
 
@@ -39,4 +39,13 @@ test('boundsOf', () => {
   expect(boundsOf([])).toBeNull();
   expect(boundsOf([{ x: 0, y: 0, width: 10, height: 10 }, { x: 20, y: -5, width: 5, height: 5 }]))
     .toEqual({ x: 0, y: -5, width: 25, height: 15 });
+});
+
+test('countCentresInside counts rects by their centre', () => {
+  const area = { x: 0, y: 0, width: 100, height: 100 };
+  const inside = { x: 10, y: 10, width: 20, height: 20 };        // centre (20, 20)
+  const straddling = { x: 80, y: 80, width: 60, height: 60 };    // centre (110, 110): outside
+  const halfIn = { x: -20, y: 40, width: 60, height: 20 };       // centre (10, 50): inside
+  expect(countCentresInside([inside, straddling, halfIn], area)).toBe(2);
+  expect(countCentresInside([], area)).toBe(0);
 });

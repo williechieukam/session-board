@@ -42,3 +42,14 @@ export function boundsOf(rects: Rect[]): Rect | null {
   }
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
+
+/** Number of rects whose centre lies inside `area` (left and top edges inclusive, right and bottom exclusive). */
+export function countCentresInside(rects: Rect[], area: Rect): number {
+  let n = 0;
+  for (const r of rects) {
+    const cx = r.x + r.width / 2;
+    const cy = r.y + r.height / 2;
+    if (cx >= area.x && cx < area.x + area.width && cy >= area.y && cy < area.y + area.height) n++;
+  }
+  return n;
+}
