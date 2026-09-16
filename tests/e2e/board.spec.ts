@@ -315,6 +315,24 @@ test('a keyboard alone can reach a note, select it and edit it', async ({ page }
   await expect(page.locator('textarea.card-editor')).toBeFocused();
 });
 
+test('the selection toolbar follows the window when it shrinks', async ({ page }) => {
+  // Selecting at desktop width and then narrowing the window is the order that used to
+  // strand the toolbar off screen: the clamp ran at render and nothing re-rendered on resize.
+  await createCard(page, 900, 300, 'Desktop note');
+  const o = await boardOrigin(page);
+  await page.mouse.click(o.x + 900, o.y + 300);
+  await expect(page.getByTestId('selection-toolbar')).toBeVisible();
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.waitForTimeout(300);
+  const box = await page.getByTestId('selection-toolbar').evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { left: Math.round(r.left), right: Math.round(r.right), fits: r.left >= -0.5 && r.right <= window.innerWidth + 0.5 };
+  });
+  expect(box).toMatchObject({ fits: true });
+  await expect(page.getByRole('button', { name: 'Delete' })).toBeInViewport();
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();

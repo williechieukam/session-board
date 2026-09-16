@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type React from 'react';
 import { CARD_COLORS, ZONE_COLORS } from '../model/types';
 import { CARD_PALETTE, ZONE_PALETTE, type Swatch } from '../model/palette';
@@ -54,6 +54,21 @@ export function SelectionToolbar() {
   const dragging = useUiStore((s) => s.dragOffset !== null);
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
+  // The clamp is computed during render, and a window resize re-renders nothing on its own.
+  // Without this the toolbar keeps a position measured for the old width and lands off screen.
+  const [containerWidth, setContainerWidth] = useState(() => boardSize().width);
+  useEffect(() => {
+    let frame = 0;
+    const onResize = () => {
+      if (frame !== 0) return;
+      frame = requestAnimationFrame(() => { frame = 0; setContainerWidth(boardSize().width); });
+    };
+    window.addEventListener('resize', onResize);
+    return () => {
+      if (frame !== 0) cancelAnimationFrame(frame);
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
   // Measured after paint: the toolbar's width depends on which controls this selection shows.
   useLayoutEffect(() => {
     const w = ref.current?.getBoundingClientRect().width ?? 0;
@@ -68,7 +83,7 @@ export function SelectionToolbar() {
   if (!bounds) return null;
   const tl = boardToScreen({ x: bounds.x, y: bounds.y }, board.viewport);
   const br = boardToScreen({ x: bounds.x + bounds.width, y: bounds.y + bounds.height }, board.viewport);
-  const style = toolbarPosition(tl.x, tl.y, br.y, { containerWidth: boardSize().width, toolbarWidth: width });
+  const style = toolbarPosition(tl.x, tl.y, br.y, { containerWidth, toolbarWidth: width });
   const cardIds = cards.map((c) => c.id);
   const stop = (e: React.PointerEvent) => e.stopPropagation();
 
