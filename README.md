@@ -13,7 +13,7 @@ no sign-in: the board lives in your browser and saves to a file you own.
 
 ## Quick start
 
-Requires Node ^20.19.0 || >=22.12.0.
+Requires Node 20.19 or later, or 22.12 or later on the 22 line and above.
 
 ```bash
 npm install
@@ -115,8 +115,8 @@ tests/e2e    Playwright, desktop and touch
 ```
 
 Typography is Atkinson Hyperlegible, chosen for reading at a distance, and the
-colours are tuned for a projector rather than a desk. Every text and control
-pairing was measured for contrast in both themes. Animations respect a reduced
+colours are tuned for a projector rather than a desk. Text and control pairings were
+measured for contrast rather than judged by eye. Animations respect a reduced
 motion preference.
 
 Two documents explain the decisions behind all of this, including the ones that
