@@ -1,5 +1,5 @@
 import { render, fireEvent } from '@testing-library/react';
-import { useKeyboardShortcuts, cardReadingOrder, nextCardId } from './useKeyboardShortcuts';
+import { useKeyboardShortcuts, itemReadingOrder, nextItemId } from './useKeyboardShortcuts';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { createEmptyBoard, createZone } from '../model/types';
@@ -130,19 +130,19 @@ describe('while presenting', () => {
   });
 });
 
-test('cardReadingOrder walks rows top to bottom, each row left to right', () => {
+test('itemReadingOrder walks rows top to bottom, each row left to right', () => {
   const c = (id: string, x: number, y: number) => ({ id, x, y, height: 120 });
   // Two rows: the second and third sit within half a card height of the first.
-  const order = cardReadingOrder([c('c', 700, 10), c('a', 0, 0), c('b', 350, 40), c('d', 0, 400)]);
+  const order = itemReadingOrder([c('c', 700, 10), c('a', 0, 0), c('b', 350, 40), c('d', 0, 400)]);
   expect(order).toEqual(['a', 'b', 'c', 'd']);
 });
 
-test('nextCardId wraps at both ends and starts from either end', () => {
+test('nextItemId wraps at both ends and starts from either end', () => {
   const order = ['a', 'b', 'c'];
-  expect(nextCardId(order, null, 1)).toBe('a');
-  expect(nextCardId(order, null, -1)).toBe('c');
-  expect(nextCardId(order, 'b', 1)).toBe('c');
-  expect(nextCardId(order, 'c', 1)).toBe('a');
-  expect(nextCardId(order, 'a', -1)).toBe('c');
-  expect(nextCardId([], null, 1)).toBeNull();
+  expect(nextItemId(order, null, 1)).toBe('a');
+  expect(nextItemId(order, null, -1)).toBe('c');
+  expect(nextItemId(order, 'b', 1)).toBe('c');
+  expect(nextItemId(order, 'c', 1)).toBe('a');
+  expect(nextItemId(order, 'a', -1)).toBe('c');
+  expect(nextItemId([], null, 1)).toBeNull();
 });

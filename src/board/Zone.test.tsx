@@ -1,5 +1,5 @@
 import { act, render, screen, fireEvent } from '@testing-library/react';
-import { Zone } from './Zone';
+import { Zone, zoneLabel } from './Zone';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { createCard, createEmptyBoard, createZone } from '../model/types';
@@ -77,4 +77,10 @@ test('header shows how many notes sit inside the zone', () => {
   act(() => useBoardStore.setState((s) => ({ board: { ...s.board, cards: [inA] } })));
   rerender(<Zone zone={z} />);
   expect(screen.getByTestId('zone-header')).toHaveTextContent(/1 note$/);
+});
+
+test('a zone tells a screen reader its name and how many notes it holds', () => {
+  expect(zoneLabel('Went well', 0)).toBe('Went well zone, 0 notes');
+  expect(zoneLabel('Went well', 1)).toBe('Went well zone, 1 note');
+  expect(zoneLabel('Actions', 7)).toBe('Actions zone, 7 notes');
 });

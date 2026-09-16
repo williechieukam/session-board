@@ -7,8 +7,15 @@ import { useUiStore, wantsPan } from '../store/uiStore';
 import { useDrag } from './useDrag';
 import { countCentresInside } from './coords';
 
+/** What a screen reader hears for a zone: its name, then how many notes sit in it. */
+export function zoneLabel(label: string, noteCount: number): string {
+  return `${label} zone, ${noteCount} ${noteCount === 1 ? 'note' : 'notes'}`;
+}
+
 function ZoneView({ zone }: { zone: ZoneModel }) {
   const selected = useBoardStore((s) => s.selection.includes(zone.id));
+  // Roving tabindex, matching notes: one entry point, then arrows walk the board.
+  const isTabStop = useBoardStore((s) => (s.selection.length > 0 ? s.selection[0] === zone.id : s.board.zones[0]?.id === zone.id));
   const editing = useUiStore((s) => s.editingId === zone.id);
   const offset = useUiStore((s) => (s.dragOffset && s.dragOffset.ids.includes(zone.id) ? s.dragOffset : null));
   const palette = ZONE_PALETTE[zone.color];
@@ -59,6 +66,19 @@ function ZoneView({ zone }: { zone: ZoneModel }) {
       className={'zone' + (selected ? ' selected' : '')}
       data-testid="zone"
       data-id={zone.id}
+      role="listitem"
+      tabIndex={isTabStop ? 0 : -1}
+      aria-label={zoneLabel(zone.label, noteCount)}
+      aria-selected={selected}
+      onKeyDown={(e) => {
+        // While renaming, Enter belongs to the editor below, which commits on its own.
+        if (editing) return;
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        const st = useBoardStore.getState();
+        if (st.selection.includes(zone.id)) useUiStore.getState().setEditing(zone.id);
+        else st.setSelection([zone.id]);
+      }}
       style={{
         left: x, top: y,
         width: resizeRect?.width ?? zone.width,

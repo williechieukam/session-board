@@ -4,9 +4,9 @@ import { useUiStore } from '../store/uiStore';
 import { createCardCentredAt, createZoneCentred, viewportCentre } from './actions';
 import { enterPresent, exitPresent, stepPresent } from './present';
 
-/** Cards in reading order: rows top to bottom, each row left to right. */
-export function cardReadingOrder(cards: { id: string; x: number; y: number; height: number }[]): string[] {
-  const byTop = [...cards].sort((a, b) => a.y - b.y || a.x - b.x);
+/** Board items in reading order: rows top to bottom, each row left to right. */
+export function itemReadingOrder(items: { id: string; x: number; y: number; height: number }[]): string[] {
+  const byTop = [...items].sort((a, b) => a.y - b.y || a.x - b.x);
   const rows: (typeof byTop)[] = [];
   for (const c of byTop) {
     const row = rows[rows.length - 1];
@@ -16,8 +16,8 @@ export function cardReadingOrder(cards: { id: string; x: number; y: number; heig
   return rows.flatMap((row) => [...row].sort((a, b) => a.x - b.x)).map((c) => c.id);
 }
 
-/** The note a focus move lands on, given where focus is now. Wraps at both ends. */
-export function nextCardId(order: string[], current: string | null, delta: number): string | null {
+/** The item a focus move lands on, given where focus is now. Wraps at both ends. */
+export function nextItemId(order: string[], current: string | null, delta: number): string | null {
   if (order.length === 0) return null;
   const at = current ? order.indexOf(current) : -1;
   if (at === -1) return delta > 0 ? order[0] : order[order.length - 1];
@@ -67,14 +67,15 @@ export function useKeyboardShortcuts(): void {
       }
       if (e.key === 'Escape') { useUiStore.getState().setEditing(null); st.setSelection([]); return; }
       const arrow = ARROWS[e.key];
-      // With nothing selected, arrows walk focus between notes so a keyboard can reach one.
-      // Once something is selected they nudge it, which is the behaviour that already existed.
-      if (arrow && st.selection.length === 0 && st.board.cards.length > 0) {
+      // With nothing selected, arrows walk focus across notes and zones alike, so a keyboard
+      // can reach either. Once something is selected they nudge it, as they always did.
+      const items = [...st.board.cards, ...st.board.zones];
+      if (arrow && st.selection.length === 0 && items.length > 0) {
         e.preventDefault();
-        const order = cardReadingOrder(st.board.cards);
+        const order = itemReadingOrder(items);
         const focused = document.activeElement instanceof HTMLElement ? document.activeElement.dataset.id ?? null : null;
-        const id = nextCardId(order, focused, arrow[0] + arrow[1] > 0 ? 1 : -1);
-        if (id) document.querySelector<HTMLElement>(`.card[data-id="${id}"]`)?.focus();
+        const id = nextItemId(order, focused, arrow[0] + arrow[1] > 0 ? 1 : -1);
+        if (id) document.querySelector<HTMLElement>(`[data-id="${id}"]`)?.focus();
         return;
       }
       if (arrow && st.selection.length) {

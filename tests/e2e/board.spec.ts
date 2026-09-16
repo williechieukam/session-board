@@ -333,6 +333,33 @@ test('the selection toolbar follows the window when it shrinks', async ({ page }
   await expect(page.getByRole('button', { name: 'Delete' })).toBeInViewport();
 });
 
+test('a keyboard alone can reach a zone and rename it', async ({ page }) => {
+  await page.keyboard.press('z');
+  await page.keyboard.press('Escape');
+  const focused = () => page.evaluate(() => {
+    const el = document.activeElement as HTMLElement | null;
+    return { isZone: !!el?.classList.contains('zone'), label: el?.getAttribute('aria-label') ?? null };
+  });
+
+  let reached = false;
+  for (let i = 0; i < 25 && !reached; i += 1) {
+    await page.keyboard.press('Tab');
+    reached = (await focused()).isZone;
+  }
+  expect(reached).toBe(true);
+  expect((await focused()).label).toBe('Zone zone, 0 notes');
+
+  // Enter selects, Enter again opens the rename editor.
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.zone.selected')).toHaveCount(1);
+  await page.keyboard.press('Enter');
+  const editor = page.locator('.zone-label-editor');
+  await expect(editor).toBeFocused();
+  await editor.fill('Went well');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.zone-label')).toHaveText('Went well');
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, createEvent } from '@testing-library/react';
 import { Card, cardLabel } from './Card';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
@@ -166,4 +166,16 @@ test('a note tells a screen reader its text and its votes', () => {
   expect(cardLabel('Flaky CI', 1)).toBe('Flaky CI, 1 vote');
   expect(cardLabel('Flaky CI', 4)).toBe('Flaky CI, 4 votes');
   expect(cardLabel('   ', 0)).toBe('Empty note');
+});
+
+test('Enter inside the editor belongs to the textarea, not the card', () => {
+  const card = createCard({ x: 0, y: 0, text: 'first' }, 1);
+  useBoardStore.setState((s) => ({ board: { ...s.board, cards: [card] } }));
+  useUiStore.setState({ editingId: card.id });
+  render(<Card card={card} />);
+  const editor = screen.getByRole('textbox');
+  const event = createEvent.keyDown(editor, { key: 'Enter' });
+  fireEvent(editor, event);
+  // The card's own handler must not cancel the newline the textarea is about to insert.
+  expect(event.defaultPrevented).toBe(false);
 });

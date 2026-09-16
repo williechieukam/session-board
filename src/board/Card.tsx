@@ -119,6 +119,9 @@ function CardView({ card }: { card: CardModel }) {
       aria-label={cardLabel(card.text, card.votes)}
       aria-selected={selected}
       onKeyDown={(e) => {
+        // While editing, Enter belongs to the textarea: this handler would swallow the
+        // newline, because preventDefault here also cancels the browser's text insertion.
+        if (editing) return;
         if (e.key !== 'Enter' && e.key !== ' ') return;
         e.preventDefault();
         // Focus must not select, or the next arrow press would nudge the note instead of
