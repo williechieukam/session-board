@@ -26,6 +26,7 @@ export interface BoardState {
   deleteItems(ids: string[]): void;
   bringToFront(id: string): void;
   addZone(init: { x: number; y: number } & Partial<Zone>): string;
+  addZones(specs: ({ x: number; y: number } & Partial<Zone>)[]): string[];
   updateZoneLabel(id: string, label: string): void;
   setZoneColor(id: string, color: ZoneColor): void;
   setViewport(viewport: Viewport): void;
@@ -192,6 +193,13 @@ export const useBoardStore = create<BoardState>()((set, get) => {
       const zone = createZone(init);
       mutate((b) => { b.zones.push(zone); });
       return zone.id;
+    },
+
+    addZones(specs) {
+      if (specs.length === 0) return [];
+      const zones = specs.map((spec) => createZone(spec));
+      mutate((b) => { b.zones.push(...zones); });
+      return zones.map((z) => z.id);
     },
 
     updateZoneLabel(id, label) {

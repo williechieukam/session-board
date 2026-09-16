@@ -116,6 +116,29 @@ test('zone actions', () => {
   expect(store().board.zones).toHaveLength(0);
 });
 
+test('addZones adds every zone in one undo step; undo removes them all', () => {
+  const before = store().history.past.length;
+  const ids = store().addZones([
+    { x: 0, y: 0, label: 'Went well', color: 'green', width: 600, height: 400 },
+    { x: 640, y: 0, label: 'To improve', color: 'neutral', width: 600, height: 400 },
+    { x: 1280, y: 0, label: 'Actions', color: 'blue', width: 600, height: 400 },
+  ]);
+  expect(ids).toHaveLength(3);
+  expect(store().board.zones.map((z) => z.id)).toEqual(ids);
+  expect(store().board.zones.map((z) => z.label)).toEqual(['Went well', 'To improve', 'Actions']);
+  expect(store().history.past.length).toBe(before + 1);
+  store().undo();
+  expect(store().board.zones).toHaveLength(0);
+});
+
+test('addZones with an empty array is a no-op and records no history', () => {
+  const before = store().history.past.length;
+  const ids = store().addZones([]);
+  expect(ids).toEqual([]);
+  expect(store().board.zones).toHaveLength(0);
+  expect(store().history.past.length).toBe(before);
+});
+
 test('setViewport is not recorded and does not dirty', () => {
   store().setViewport({ x: 10, y: 20, zoom: 2 });
   expect(store().board.viewport).toEqual({ x: 10, y: 20, zoom: 2 });
