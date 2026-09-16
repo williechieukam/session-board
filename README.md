@@ -13,7 +13,8 @@ no sign-in: the board lives in your browser and saves to a file you own.
 
 ## Quick start
 
-Requires Node 20.19 or later, or 22.12 or later on the 22 line and above.
+Requires Node 20.19 or later. Node 21 is not supported, and from Node 22 the
+floor is 22.12.
 
 ```bash
 npm install
@@ -109,15 +110,16 @@ src/model    the board document, its schema, the colour palette
 src/store    board state, undo history, browser backup, transient UI state
 src/board    canvas, notes, zones, selection, gestures, Present mode, layouts
 src/chrome   the floating instruments: file pill, menu, dock, zoom, session bar
+src/timer    the workshop timer and its settings
 src/theme    theme choice and the root stamp
 src/io       file save and load, PNG export
 tests/e2e    Playwright, desktop and touch
 ```
 
 Typography is Atkinson Hyperlegible, chosen for reading at a distance, and the
-colours are tuned for a projector rather than a desk. Text and control pairings were
-measured for contrast rather than judged by eye. Animations respect a reduced
-motion preference.
+colours are tuned for a projector rather than a desk. Text and control pairings
+were measured for contrast rather than judged by eye. Animations respect a
+reduced motion preference.
 
 Two documents explain the decisions behind all of this, including the ones that
 were reversed:
