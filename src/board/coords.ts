@@ -1,4 +1,4 @@
-import { ZOOM_MAX, ZOOM_MIN, type Rect, type Viewport } from '../model/types';
+import { FIT_ZOOM_MIN, ZOOM_MAX, ZOOM_MIN, type Rect, type Viewport } from '../model/types';
 
 export interface Point { x: number; y: number }
 
@@ -10,12 +10,15 @@ export function boardToScreen(p: Point, vp: Viewport): Point {
   return { x: p.x * vp.zoom + vp.x, y: p.y * vp.zoom + vp.y };
 }
 
-export function clampZoom(z: number): number {
-  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z));
+export function clampZoom(z: number, floor: number = ZOOM_MIN): number {
+  return Math.min(ZOOM_MAX, Math.max(floor, z));
 }
 
 export function zoomAround(vp: Viewport, factor: number, anchor: Point): Viewport {
-  const zoom = clampZoom(vp.zoom * factor);
+  // A viewport a fit has parked below the usual floor must still zoom out. Clamping it back up
+  // to ZOOM_MIN would make the zoom-out button zoom in; flooring at the current zoom would stop
+  // it moving at all. Below the floor, only the fit guard applies.
+  const zoom = clampZoom(vp.zoom * factor, vp.zoom < ZOOM_MIN ? FIT_ZOOM_MIN : ZOOM_MIN);
   const boardPoint = screenToBoard(anchor, vp);
   return { zoom, x: anchor.x - boardPoint.x * zoom, y: anchor.y - boardPoint.y * zoom };
 }
@@ -72,14 +75,47 @@ export interface Margins { top: number; right: number; bottom: number; left: num
 
 /**
  * Viewport that fits `rect` into a `size` box, centred in the area inside `margins`.
- * The zoom is the fit zoom capped at `maxZoom`, then clamped to the zoom range.
+ * The zoom is the fit zoom capped at `maxZoom`. It is deliberately not held to ZOOM_MIN:
+ * a board wider than the window needs less, and Present mode's overview is the first slide.
  */
 export function fitViewport(rect: Rect, size: { width: number; height: number }, margins: Margins, maxZoom: number): Viewport {
   const availW = Math.max(1, size.width - margins.left - margins.right);
   const availH = Math.max(1, size.height - margins.top - margins.bottom);
   const fit = Math.min(availW / Math.max(rect.width, 1), availH / Math.max(rect.height, 1));
-  const zoom = clampZoom(Math.min(fit, maxZoom));
+  const zoom = clampZoom(Math.min(fit, maxZoom), FIT_ZOOM_MIN);
   const cx = margins.left + availW / 2;
   const cy = margins.top + availH / 2;
   return { zoom, x: cx - (rect.x + rect.width / 2) * zoom, y: cy - (rect.y + rect.height / 2) * zoom };
+}
+
+/** Keep a revealed item this far inside the edge, so it never sits flush against the frame. */
+const REVEAL_MARGIN = 24;
+
+/**
+ * Viewport panned just far enough to bring `rect` (board space) fully into view, or null if it
+ * already is. Zoom is never touched.
+ *
+ * Focus that lands off screen is focus a keyboard user cannot follow, and the browser cannot
+ * rescue it: the board is `overflow: hidden` over a transformed layer, so scroll-into-view has
+ * nothing to scroll.
+ */
+export function panToReveal(
+  rect: Rect,
+  vp: Viewport,
+  size: { width: number; height: number },
+  margin: number = REVEAL_MARGIN,
+): Viewport | null {
+  const left = rect.x * vp.zoom + vp.x;
+  const top = rect.y * vp.zoom + vp.y;
+  const right = left + rect.width * vp.zoom;
+  const bottom = top + rect.height * vp.zoom;
+  // Where the item is larger than the view, its top-left wins: that is where reading starts.
+  let dx = 0;
+  if (left < margin) dx = margin - left;
+  else if (right > size.width - margin) dx = Math.max(size.width - margin - right, margin - left);
+  let dy = 0;
+  if (top < margin) dy = margin - top;
+  else if (bottom > size.height - margin) dy = Math.max(size.height - margin - bottom, margin - top);
+  if (dx === 0 && dy === 0) return null;
+  return { zoom: vp.zoom, x: vp.x + dx, y: vp.y + dy };
 }

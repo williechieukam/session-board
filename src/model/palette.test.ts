@@ -65,3 +65,11 @@ test('the stylesheet names its scales rather than repeating literals', () => {
     expect(css).toContain(`${token}:`);
   }
 });
+
+test('board content carries the app focus ring, not the browser default', () => {
+  const css = readFileSync('src/styles.css', 'utf8');
+  // Notes and zones are the only content in the app; without this they fall back to the
+  // UA outline, which is about one hairline on a coloured note and differs per browser.
+  expect(css).toMatch(/\.card:focus-visible[^{]*\{[^}]*outline:/);
+  expect(css).toMatch(/\.zone:focus-visible[^{]*\{[^}]*outline:/);
+});

@@ -24,6 +24,23 @@ export function nextItemId(order: string[], current: string | null, delta: numbe
   return order[(at + delta + order.length) % order.length];
 }
 
+/**
+ * The board's single tab stop: what the person is working on, else the first item in reading
+ * order.
+ *
+ * Notes and zones are one list and so share one stop. Two stops would mean Tab enters the board
+ * twice, and a stop chosen by creation order would drop focus on the oldest note, which on a
+ * worked board is usually nowhere on screen.
+ */
+export function rovingStopId(
+  selection: string[],
+  items: { id: string; x: number; y: number; height: number }[],
+): string | null {
+  if (selection.length > 0) return selection[0];
+  if (items.length === 0) return null;
+  return itemReadingOrder(items)[0];
+}
+
 export function isTextTarget(t: EventTarget | null): boolean {
   return t instanceof HTMLElement && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
 }

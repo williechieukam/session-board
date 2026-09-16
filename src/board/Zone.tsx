@@ -6,6 +6,8 @@ import { useBoardStore } from '../store/boardStore';
 import { useUiStore, wantsPan } from '../store/uiStore';
 import { useDrag } from './useDrag';
 import { countCentresInside } from './coords';
+import { rovingStopId } from './useKeyboardShortcuts';
+import { revealItem } from './reveal';
 
 /** What a screen reader hears for a zone: its name, then how many notes sit in it. */
 export function zoneLabel(label: string, noteCount: number): string {
@@ -14,8 +16,8 @@ export function zoneLabel(label: string, noteCount: number): string {
 
 function ZoneView({ zone }: { zone: ZoneModel }) {
   const selected = useBoardStore((s) => s.selection.includes(zone.id));
-  // Roving tabindex, matching notes: one entry point, then arrows walk the board.
-  const isTabStop = useBoardStore((s) => (s.selection.length > 0 ? s.selection[0] === zone.id : s.board.zones[0]?.id === zone.id));
+  // Roving tabindex, matching notes: one entry point for the whole board, then arrows walk it.
+  const isTabStop = useBoardStore((s) => rovingStopId(s.selection, [...s.board.cards, ...s.board.zones]) === zone.id);
   const editing = useUiStore((s) => s.editingId === zone.id);
   const offset = useUiStore((s) => (s.dragOffset && s.dragOffset.ids.includes(zone.id) ? s.dragOffset : null));
   const palette = ZONE_PALETTE[zone.color];
@@ -70,6 +72,7 @@ function ZoneView({ zone }: { zone: ZoneModel }) {
       tabIndex={isTabStop ? 0 : -1}
       aria-label={zoneLabel(zone.label, noteCount)}
       aria-selected={selected}
+      onFocus={() => revealItem({ x: zone.x, y: zone.y, width: zone.width, height: zone.height })}
       onKeyDown={(e) => {
         // While renaming, Enter belongs to the editor below, which commits on its own.
         if (editing) return;

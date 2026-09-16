@@ -45,6 +45,11 @@ export const ZONE_DEFAULT_SIZE = { width: 600, height: 400 } as const;
 export const ZONE_MIN_SIZE = { width: 200, height: 150 } as const;
 export const ZOOM_MIN = 0.25;
 export const ZOOM_MAX = 3;
+/**
+ * Fitting is allowed below ZOOM_MIN. ZOOM_MIN is a floor on what a person can choose by
+ * pressing zoom out; a fit that refuses to fit is not a fit. This floor only guards against zero.
+ */
+export const FIT_ZOOM_MIN = 0.001;
 
 export function newId(): string {
   return crypto.randomUUID();
