@@ -292,9 +292,21 @@ button, input, textarea { font: inherit; color: inherit; }
   padding: 10px 16px; border-radius: var(--r-pill); background: var(--ink); color: var(--panel); font-size: var(--text-sm); font-weight: 500; box-shadow: var(--shadow-panel);
 }
 
+/*
+ * The file pill and the session bar are both fixed panels of fixed width: 483px, and up to
+ * 276px once the timer is counting down and reads "04:59 remaining". Neither shrinks, so they
+ * need 791px to sit side by side and below that the bar has to stack under the pill.
+ *
+ * This used to break at 600px, which was low enough that they already overlapped the moment
+ * the bar moved up: 13px at 601 idle, 71px with a timer running, and again across 701-733 and
+ * 740-790. The breakpoint now matches the width the layout actually requires.
+ */
+@media (max-width: 800px) {
+  .session-bar { top: calc(var(--chrome-top) + 8px); }
+}
+
 /* Narrow screens: stack chrome that would otherwise collide. */
 @media (max-width: 600px) {
-  .session-bar { top: calc(var(--chrome-top) + 8px); }
   /*
    * Flex wraps before it shrinks, so a name fixed at 16ch pushed Save file onto a third row
    * and then kept its full width anyway. A narrow basis keeps every control on one row.

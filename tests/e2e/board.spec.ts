@@ -564,3 +564,44 @@ for (const width of [320, 375, 700]) {
     expect(pill.x + pill.width).toBeLessThanOrEqual(width + 0.5);
   });
 }
+
+/*
+ * The file pill and the session bar are both fixed panels pinned to the top corners. When the
+ * window is too narrow to seat them side by side they overlap, and the pill's Save file control
+ * ends up underneath the Timer. Neither shrinks, so the layout has to stack before that happens.
+ */
+async function topPanelsOverlap(page: Page) {
+  return page.evaluate(() => {
+    const a = document.querySelector('.file-pill')!.getBoundingClientRect();
+    const b = document.querySelector('.session-bar')!.getBoundingClientRect();
+    const ix = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
+    const iy = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+    return { overlapX: Math.round(ix), overlapY: Math.round(iy), collides: ix > 0 && iy > 0 };
+  });
+}
+
+for (const width of [620, 701, 720, 760, 800, 900, 1280]) {
+  test(`the file pill never sits under the session bar at ${width} px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 812 });
+    await page.waitForTimeout(200);
+    expect(await topPanelsOverlap(page)).toMatchObject({ collides: false });
+  });
+}
+
+test('a running timer does not push the session bar over the file pill', async ({ page }) => {
+  // The timer widens the bar from "Timer" to a countdown plus "remaining", which is the state
+  // the app spends a workshop in — so every width has to hold in it, not just the idle ones.
+  // Started once, then the window is resized around it: pressing Start again would look for a
+  // button that is no longer there.
+  await page.setViewportSize({ width: 900, height: 812 });
+  await page.getByRole('button', { name: 'Timer settings' }).click();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.timer')).toContainText('remaining');
+
+  for (const width of [620, 700, 760, 790, 800, 900]) {
+    await page.setViewportSize({ width, height: 812 });
+    await page.waitForTimeout(300);
+    expect(await topPanelsOverlap(page), `at ${width} px with a running timer`).toMatchObject({ collides: false });
+  }
+});
