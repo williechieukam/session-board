@@ -468,3 +468,50 @@ test('export produces a PNG download', async ({ page }) => {
   const bytes = fs.readFileSync((await download.path())!);
   expect(bytes.subarray(1, 4).toString()).toBe('PNG');
 });
+
+test('present mode fits the whole board on a narrow window', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.getByRole('button', { name: /Retro/i }).click();
+  await page.waitForTimeout(600);
+  await page.keyboard.press('p');
+  await page.waitForTimeout(900);
+  // The overview is the first slide a room sees. Every zone has to be on it.
+  const zones = await page.getByTestId('zone').evaluateAll((els) => els.map((el) => {
+    const r = el.getBoundingClientRect();
+    return { left: r.left, right: r.right };
+  }));
+  expect(zones).toHaveLength(3);
+  for (const z of zones) {
+    expect(z.left).toBeGreaterThanOrEqual(-0.5);
+    expect(z.right).toBeLessThanOrEqual(375.5);
+  }
+});
+
+test('the board offers one keyboard entry point, not one per kind of item', async ({ page }) => {
+  await page.getByRole('button', { name: /Retro/i }).click();
+  await createCard(page, 300, 300, 'A note');
+  const stops = page.locator('.card[tabindex="0"], .zone[tabindex="0"]');
+  // While something is selected, the stop is what the person is working on.
+  await expect(stops).toHaveCount(1);
+  await expect(stops).toHaveAttribute('aria-label', /A note/);
+  // With nothing selected it falls to the first item in reading order, and there is still one.
+  await page.keyboard.press('Escape');
+  await expect(stops).toHaveCount(1);
+});
+
+test('a keyboard-focused note shows the app focus ring, not the browser default', async ({ page }) => {
+  await createCard(page, 300, 300, 'Focus me');
+  await page.keyboard.press('Escape');
+  for (let i = 0; i < 16; i += 1) {
+    await page.keyboard.press('Tab');
+    const cls = await page.evaluate(() => (document.activeElement?.className ?? '').toString());
+    if (cls.split(' ').includes('card')) break;
+  }
+  const ring = await page.evaluate(() => {
+    const cs = getComputedStyle(document.activeElement as HTMLElement);
+    return { style: cs.outlineStyle, width: cs.outlineWidth, focusVisible: (document.activeElement as HTMLElement).matches(':focus-visible') };
+  });
+  expect(ring.focusVisible).toBe(true);
+  expect(ring.style).toBe('dashed');
+  expect(ring.width).toBe('3px');
+});

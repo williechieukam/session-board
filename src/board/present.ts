@@ -40,7 +40,7 @@ export function stopCount(board: Board): number {
 let animationTimer: ReturnType<typeof setTimeout> | null = null;
 
 /** Programmatic viewport change with a short transition. Never recorded in history. */
-function animateTo(viewport: Viewport): void {
+export function animateTo(viewport: Viewport): void {
   useUiStore.setState({ animateViewport: true });
   useBoardStore.getState().setViewport(viewport);
   if (animationTimer) clearTimeout(animationTimer);

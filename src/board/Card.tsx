@@ -5,6 +5,8 @@ import { CARD_PALETTE } from '../model/palette';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore, wantsPan } from '../store/uiStore';
 import { useDrag } from './useDrag';
+import { rovingStopId } from './useKeyboardShortcuts';
+import { revealItem } from './reveal';
 
 /** Stickers drawn on a note; the count beside them carries the exact number. */
 const MAX_STICKERS = 6;
@@ -18,8 +20,9 @@ export function cardLabel(text: string, votes: number): string {
 
 function CardView({ card }: { card: CardModel }) {
   const selected = useBoardStore((s) => s.selection.includes(card.id));
-  // Roving tabindex: Tab reaches the board once, then arrows move between notes.
-  const isTabStop = useBoardStore((s) => (s.selection.length > 0 ? s.selection[0] === card.id : s.board.cards[0]?.id === card.id));
+  // Roving tabindex: Tab reaches the board once, then arrows move between items. Notes and
+  // zones share the one stop, so it is computed over both.
+  const isTabStop = useBoardStore((s) => rovingStopId(s.selection, [...s.board.cards, ...s.board.zones]) === card.id);
   const offset = useUiStore((s) => (s.dragOffset && s.dragOffset.ids.includes(card.id) ? s.dragOffset : null));
   const editing = useUiStore((s) => s.editingId === card.id);
   const palette = CARD_PALETTE[card.color];
@@ -122,6 +125,7 @@ function CardView({ card }: { card: CardModel }) {
       tabIndex={isTabStop ? 0 : -1}
       aria-label={cardLabel(card.text, card.votes)}
       aria-selected={selected}
+      onFocus={() => revealItem({ x: card.x, y: card.y, width: card.width, height: card.height })}
       onKeyDown={(e) => {
         // While editing, Enter belongs to the textarea: this handler would swallow the
         // newline, because preventDefault here also cancels the browser's text insertion.

@@ -86,6 +86,17 @@ button, input, textarea { font: inherit; color: inherit; }
 /* ===== Zones ===== */
 .zone { position: absolute; border-radius: var(--r-lg); background: var(--zone-fill-use); border: 1px solid var(--zone-edge-use); pointer-events: none; }
 .zone.selected { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/*
+ * The board's own content is the one thing the app's focus ring never covered: the ring rule
+ * below scopes to buttons, inputs and menu items, so a focused note fell back to the UA outline
+ * — about a hairline on a coloured note, and different in every browser.
+ *
+ * Dashed where selection is solid, so focused-but-not-selected reads as its own state. Declared
+ * after both .selected rules, at equal specificity, so focus wins when an item is both.
+ */
+.card:focus-visible,
+.zone:focus-visible { outline: 3px dashed var(--primary); outline-offset: 3px; }
 .zone-header {
   pointer-events: auto; position: absolute; left: 0; right: 0; top: 0; height: 44px;
   display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 18px;
