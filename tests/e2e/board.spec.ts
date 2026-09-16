@@ -216,7 +216,7 @@ test('starting a new board asks before discarding a board restored from the back
   const restored = await context.newPage();
   await restored.goto('/');
   await expect(restored.getByTestId('card')).toHaveCount(1);
-  await expect(restored.locator('.dirty-dot')).toHaveCount(0);
+  await expect(restored.locator('.status')).toHaveText('Not saved to a file');
 
   let asked = 0;
   restored.on('dialog', (d) => { asked += 1; void d.dismiss(); });

@@ -1,5 +1,5 @@
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { FilePill } from './FilePill';
+import { FilePill, statusText } from './FilePill';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { createCard, createEmptyBoard } from '../model/types';
@@ -16,7 +16,7 @@ const openMenu = () => fireEvent.click(screen.getByRole('button', { name: 'Board
 const item = (name: string) => screen.getByRole('menuitem', { name });
 
 beforeEach(() => {
-  useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
+  useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false, savedToFile: false });
   useUiStore.setState({ editingId: null, dragOffset: null, toast: null, backupOff: false });
   vi.mocked(fileIo.loadBoardFromFile).mockReset();
   vi.mocked(fileIo.saveBoardToFile).mockReset();
@@ -32,26 +32,55 @@ test('rename commits on blur', () => {
   expect(st().board.name).toBe('Retro');
 });
 
-test('status line reflects the board and the browser backup', () => {
+test('the status line tells one truth about where the board exists', () => {
   render(<FilePill />);
   expect(screen.getByText('Nothing to save yet')).toBeInTheDocument();
+
+  // Content, but only the browser backup is holding it.
   act(() => { st().addCard({ x: 0, y: 0 }); });
-  expect(screen.getByText('Saved in this browser')).toBeInTheDocument();
+  expect(screen.getByText('Not saved to a file')).toBeInTheDocument();
+
+  // No file and no backup either: the one genuinely dangerous state.
   act(() => useUiStore.setState({ backupOff: true }));
-  expect(screen.getByText('Browser backup is off')).toBeInTheDocument();
+  expect(screen.getByText('Not saved anywhere')).toBeInTheDocument();
+  act(() => useUiStore.setState({ backupOff: false }));
+
+  // A file holds it, named so the facilitator knows which one.
+  act(() => { st().markSavedToFile(); });
+  expect(screen.getByText('Saved to Untitled board.board.json')).toBeInTheDocument();
+
+  // Edited since: the file is behind.
+  act(() => { st().addCard({ x: 10, y: 10 }); });
+  expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
 });
 
-test('save file downloads, marks clean, toasts, and shows a dot only while dirty', () => {
+test('statusText never reports two answers at once', () => {
+  const base = { isEmpty: false, savedToFile: false, dirty: false, backupOff: false, fileName: 'Retro.board.json' };
+  expect(statusText({ ...base, isEmpty: true })).toBe('Nothing to save yet');
+  expect(statusText(base)).toBe('Not saved to a file');
+  expect(statusText({ ...base, backupOff: true })).toBe('Not saved anywhere');
+  expect(statusText({ ...base, savedToFile: true })).toBe('Saved to Retro.board.json');
+  expect(statusText({ ...base, savedToFile: true, dirty: true })).toBe('Unsaved changes');
+  // A file that holds the board is safe whether or not the browser backup is working.
+  expect(statusText({ ...base, savedToFile: true, backupOff: true })).toBe('Saved to Retro.board.json');
+});
+
+test('save file is off on an empty board, then downloads and names the file', () => {
   render(<FilePill />);
   const save = screen.getByRole('button', { name: 'Save file' });
-  expect(save.querySelector('.dirty-dot')).toBeNull();
+  // Saving an empty board would download an empty document.
+  expect(save).toBeDisabled();
+
   act(() => { st().addCard({ x: 0, y: 0 }); });
-  expect(save.querySelector('.dirty-dot')).not.toBeNull();
+  expect(save).toBeEnabled();
+  expect(screen.getByText('Not saved to a file')).toBeInTheDocument();
+
   fireEvent.click(save);
   expect(fileIo.saveBoardToFile).toHaveBeenCalledTimes(1);
   expect(st().dirty).toBe(false);
+  expect(st().savedToFile).toBe(true);
   expect(useUiStore.getState().toast).toBe('Saved');
-  expect(save.querySelector('.dirty-dot')).toBeNull();
+  expect(screen.getByText('Saved to Untitled board.board.json')).toBeInTheDocument();
 });
 
 test('board menu opens on its first item, moves with arrows, closes with Escape', () => {
