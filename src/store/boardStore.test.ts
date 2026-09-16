@@ -242,3 +242,25 @@ describe('coalesced nudges', () => {
     expect(store().history.past.length).toBe(before + 2);
   });
 });
+
+test('savedToFile tracks whether a file holds the board, and a backup restore does not count', () => {
+  const st = () => useBoardStore.getState();
+  useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false, savedToFile: false });
+  st().addCard({ x: 0, y: 0 });
+  expect(st().dirty).toBe(true);
+  expect(st().savedToFile).toBe(false);
+
+  st().markSavedToFile();
+  expect(st().dirty).toBe(false);
+  expect(st().savedToFile).toBe(true);
+
+  // Editing again means the file is behind.
+  st().addCard({ x: 10, y: 10 });
+  expect(st().savedToFile).toBe(true);
+  expect(st().dirty).toBe(true);
+
+  // Restoring a backup clears both: the browser is not a file.
+  st().loadBoard(createEmptyBoard('Restored'));
+  expect(st().dirty).toBe(false);
+  expect(st().savedToFile).toBe(false);
+});

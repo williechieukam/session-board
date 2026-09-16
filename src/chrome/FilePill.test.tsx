@@ -96,6 +96,40 @@ test('new board asks before discarding unsaved changes', () => {
   confirm.mockRestore();
 });
 
+test('new board asks before discarding a board restored from the browser backup', () => {
+  render(<FilePill />);
+  // The shape of a restored backup: real content, nothing dirty, never written to a file.
+  act(() => { st().addCard({ x: 0, y: 0 }); st().markClean(); });
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  openMenu();
+  fireEvent.click(item('New board'));
+  expect(confirm).toHaveBeenCalledTimes(1);
+  expect(confirm.mock.calls[0][0]).toContain('never been saved to a file');
+  expect(confirm.mock.calls[0][0]).toContain('1 note');
+  expect(st().board.cards).toHaveLength(1);
+  confirm.mockRestore();
+});
+
+test('new board does not ask once the board is on disk and unchanged', () => {
+  render(<FilePill />);
+  act(() => { st().addCard({ x: 0, y: 0 }); st().markSavedToFile(); });
+  const confirm = vi.spyOn(window, 'confirm');
+  openMenu();
+  fireEvent.click(item('New board'));
+  expect(confirm).not.toHaveBeenCalled();
+  expect(st().board.cards).toHaveLength(0);
+  confirm.mockRestore();
+});
+
+test('an empty board never asks', () => {
+  render(<FilePill />);
+  const confirm = vi.spyOn(window, 'confirm');
+  openMenu();
+  fireEvent.click(item('New board'));
+  expect(confirm).not.toHaveBeenCalled();
+  confirm.mockRestore();
+});
+
 test('open file replaces the board or toasts the error', async () => {
   render(<FilePill />);
   vi.mocked(fileIo.loadBoardFromFile).mockResolvedValue({ ok: true, board: createEmptyBoard('Loaded') });

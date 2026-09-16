@@ -207,6 +207,29 @@ test('the page exposes landmarks, a heading and named toolbars', async ({ page }
   }
 });
 
+test('starting a new board asks before discarding a board restored from the backup', async ({ page, context }) => {
+  await createCard(page, 300, 300, 'Survives a reload');
+  await page.waitForTimeout(800); // the backup write is debounced
+
+  // A second page in the same context keeps localStorage but skips the clearing init script,
+  // so this is a genuine restore rather than a fresh board.
+  const restored = await context.newPage();
+  await restored.goto('/');
+  await expect(restored.getByTestId('card')).toHaveCount(1);
+  await expect(restored.locator('.dirty-dot')).toHaveCount(0);
+
+  let asked = 0;
+  restored.on('dialog', (d) => { asked += 1; void d.dismiss(); });
+  await restored.getByRole('button', { name: 'Board menu' }).click();
+  await restored.getByRole('menuitem', { name: 'New board' }).click();
+  await restored.waitForTimeout(400);
+
+  // The guard must fire, and dismissing it must keep the work.
+  expect(asked).toBe(1);
+  await expect(restored.getByTestId('card')).toHaveCount(1);
+  await restored.close();
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();

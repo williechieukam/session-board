@@ -11,6 +11,8 @@ export interface BoardState {
   selection: string[];
   history: History<Board>;
   dirty: boolean;
+  /** The board was written to or read from a file this session. A browser backup does not count. */
+  savedToFile: boolean;
   /** Ids moved by the current keyboard nudge run; auto-repeat nudges for these ids extend one undo entry. */
   nudgeRun: string[] | null;
 
@@ -40,6 +42,8 @@ export interface BoardState {
   canUndo(): boolean;
   canRedo(): boolean;
   markClean(): void;
+  /** The board now exists on disk: clears dirty and records that a file holds it. */
+  markSavedToFile(): void;
 }
 
 function nextZ(board: Board): number {
@@ -82,6 +86,7 @@ export const useBoardStore = create<BoardState>()((set, get) => {
     selection: [],
     history: createHistory<Board>(),
     dirty: false,
+    savedToFile: false,
     nudgeRun: null,
 
     addCard(init) {
@@ -215,7 +220,8 @@ export const useBoardStore = create<BoardState>()((set, get) => {
     },
 
     loadBoard(board) {
-      set({ board, selection: [], history: createHistory<Board>(), dirty: false, nudgeRun: null });
+      // savedToFile stays false: a board restored from the browser backup exists nowhere on disk.
+      set({ board, selection: [], history: createHistory<Board>(), dirty: false, savedToFile: false, nudgeRun: null });
     },
 
     renameBoard(name) {
@@ -237,5 +243,6 @@ export const useBoardStore = create<BoardState>()((set, get) => {
     canUndo() { return get().history.past.length > 0; },
     canRedo() { return get().history.future.length > 0; },
     markClean() { set({ dirty: false }); },
+    markSavedToFile() { set({ dirty: false, savedToFile: true }); },
   };
 });
