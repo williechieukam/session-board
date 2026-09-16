@@ -146,6 +146,30 @@ test('an open timer panel covers the selection toolbar it overlaps', async ({ pa
   expect(hit).toBe('panel');
 });
 
+test('on a narrow window each starter layout keeps its name on one line', async ({ page }) => {
+  await page.setViewportSize({ width: 400, height: 780 });
+  await expect(page.getByTestId('empty-hint')).toBeVisible();
+  const layout = await page.evaluate(() => {
+    const buttons = [...document.querySelectorAll('.starter-btn')];
+    const lineCount = (button: Element) => {
+      const text = [...button.childNodes].find((n) => n.nodeType === Node.TEXT_NODE && n.textContent!.trim());
+      const range = document.createRange();
+      range.selectNodeContents(text!);
+      return range.getClientRects().length;
+    };
+    return {
+      names: buttons.map((b) => ({ text: b.textContent!.trim(), lines: lineCount(b) })),
+      offScreen: buttons.filter((b) => { const r = b.getBoundingClientRect(); return r.left < 0 || r.right > window.innerWidth; }).length,
+      sideScroll: document.documentElement.scrollWidth > window.innerWidth,
+    };
+  });
+  // Each name stays on one line and every button stays on screen. The row wraps as
+  // whole buttons rather than breaking a name across two lines.
+  expect(layout.names.map((n) => n.lines)).toEqual([1, 1, 1]);
+  expect(layout.offScreen).toBe(0);
+  expect(layout.sideScroll).toBe(false);
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();

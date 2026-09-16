@@ -13,8 +13,8 @@ function StarterButton({ layout }: { layout: Layout }) {
     <button type="button" className="starter-btn" onClick={() => applyLayout(layout)}>
       {layout.label}
       <span className="starter-chips" aria-hidden="true">
-        {layout.zones.map((zone, i) => (
-          <span key={i} className="starter-chip" style={chipStyle(ZONE_PALETTE[zone.color].border)} />
+        {layout.zones.map((zone) => (
+          <span key={zone.label} className="starter-chip" style={chipStyle(ZONE_PALETTE[zone.color].border)} />
         ))}
       </span>
     </button>

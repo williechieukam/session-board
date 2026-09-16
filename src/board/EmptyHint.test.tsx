@@ -3,6 +3,7 @@ import { EmptyHint } from './EmptyHint';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { createEmptyBoard } from '../model/types';
+import { LAYOUTS } from './layouts';
 
 beforeEach(() => {
   useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
@@ -14,6 +15,15 @@ test('renders the three starter layout buttons', () => {
   expect(screen.getByRole('button', { name: 'Retro' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Brainstorm' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Dot vote' })).toBeInTheDocument();
+});
+
+test('each button shows one colour chip per zone, hidden from screen readers', () => {
+  render(<EmptyHint />);
+  for (const layout of LAYOUTS) {
+    const button = screen.getByRole('button', { name: layout.label });
+    expect(button.querySelectorAll('.starter-chip')).toHaveLength(layout.zones.length);
+    expect(button.querySelector('.starter-chips')).toHaveAttribute('aria-hidden', 'true');
+  }
 });
 
 test('clicking Retro creates its three zones as one undo step, and the hint disappears', () => {
