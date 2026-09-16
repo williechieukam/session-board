@@ -221,8 +221,10 @@ test('the page carries the metadata a shared link needs', async ({ page }) => {
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /^https:\/\//);
 
   // ...and the file it names has to exist. Fetching the absolute URL would test the deployed
-  // site rather than this build, so resolve the same filename against the server under test.
-  const res = await page.request.get(`/${src.split('/').pop()}`);
+  // site rather than this build, so resolve the same filename against the server under test —
+  // relative to the page's own URL, not the origin root, so this holds whatever base the app
+  // is served from.
+  const res = await page.request.get(new URL(src.split('/').pop()!, page.url()).toString());
   expect(res.status()).toBe(200);
   expect(res.headers()['content-type']).toContain('image');
 
