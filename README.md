@@ -113,8 +113,15 @@ src/chrome   the floating instruments: file pill, menu, dock, zoom, session bar
 src/timer    the workshop timer and its settings
 src/theme    theme choice and the root stamp
 src/io       file save and load, PNG export
+src/pwa      offline worker registration
 tests/e2e    Playwright, desktop and touch
 ```
+
+The PNG exporter is split into its own chunk and downloads only when someone
+exports, since most sessions never do. A service worker caches the app on the
+first visit, so a workshop can run with no network after that, and a web
+manifest makes it installable. The worker is registered in production builds
+only: in development it would serve stale modules.
 
 Typography is Atkinson Hyperlegible, chosen for reading at a distance, and the
 colours are tuned for a projector rather than a desk. Text and control pairings

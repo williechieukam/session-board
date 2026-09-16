@@ -1,4 +1,3 @@
-import { toPng } from 'html-to-image';
 import type { Board } from '../model/types';
 import { boundsOf } from '../board/coords';
 import { downloadBlob, safeFileName } from './file';
@@ -15,6 +14,9 @@ export function dataUrlToBlob(dataUrl: string): Blob {
 }
 
 export async function exportBoardPng(content: HTMLElement, board: Board): Promise<void> {
+  // Loaded on demand: most sessions never export, and the rasteriser is the heaviest
+  // dependency in the app. This keeps it out of the first load.
+  const { toPng } = await import('html-to-image');
   const bounds = boundsOf([...board.cards, ...board.zones]);
   if (!bounds) throw new Error('The board is empty');
   const width = bounds.width + 2 * EXPORT_MARGIN;
