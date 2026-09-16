@@ -8,6 +8,13 @@ test.beforeEach(async ({ page }) => {
 const transform = (page: import('@playwright/test').Page) =>
   page.$eval('.board-content', (e) => (e as HTMLElement).style.transform);
 
+/** The zoom out of `translate(x, y) scale(z)`. */
+const scaleOf = (t: string) => {
+  const m = /scale\(([\d.]+)\)/.exec(t);
+  if (!m) throw new Error(`no scale in transform: ${t}`);
+  return Number(m[1]);
+};
+
 test('Present mode hides the tools, steps through zones, and restores the view', async ({ page }) => {
   // Two zones: both appear at the viewport centre, so drag the second (top-most) one aside by its header.
   await page.keyboard.press('z');
@@ -26,7 +33,10 @@ test('Present mode hides the tools, steps through zones, and restores the view',
 
   await page.keyboard.press('ArrowRight');
   await expect(page.getByTestId('present-hint')).toContainText('2 / 3');
-  expect(await transform(page)).not.toBe(overview);
+  const zoneStop = await transform(page);
+  expect(zoneStop).not.toBe(overview);
+  // The zone stop frames one zone, so it is zoomed in past the overview of both.
+  expect(scaleOf(zoneStop)).toBeGreaterThan(scaleOf(overview));
 
   // In fullscreen the browser may consume Escape itself; either way Present mode ends.
   await page.keyboard.press('Escape');
