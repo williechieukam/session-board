@@ -1,8 +1,8 @@
-# Card Board Redesign and Present Mode Implementation Plan
+# Sessionboard Redesign and Present Mode Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Give Card Board the approved "wall" design (full-window board, floating edge chrome, projector-legible notes) and add Present mode.
+**Goal:** Give Sessionboard the approved "wall" design (full-window board, floating edge chrome, projector-legible notes) and add Present mode.
 
 **Architecture:** Visual tokens live once in `src/styles.css`; palette colours reach CSS only through inline custom properties. The old full-width toolbar is replaced by small chrome components in `src/chrome/` that float over a full-window board. Present mode is plain functions in `src/board/present.ts` driving the existing viewport through `setViewport`, with its state in `uiStore`.
 

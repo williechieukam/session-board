@@ -1,4 +1,4 @@
-# Card Board Implementation Plan
+# Sessionboard Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -167,7 +167,7 @@ export default defineConfig({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Card Board</title>
+    <title>Sessionboard</title>
   </head>
   <body>
     <div id="root"></div>
@@ -193,7 +193,7 @@ createRoot(document.getElementById('root')!).render(
 `src/App.tsx`:
 ```tsx
 export function App() {
-  return <div className="app">Card Board</div>;
+  return <div className="app">Sessionboard</div>;
 }
 ```
 
@@ -227,7 +227,7 @@ import { App } from './App';
 
 test('renders the app shell', () => {
   render(<App />);
-  expect(screen.getByText('Card Board')).toBeInTheDocument();
+  expect(screen.getByText('Sessionboard')).toBeInTheDocument();
 });
 ```
 

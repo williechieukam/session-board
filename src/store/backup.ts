@@ -3,6 +3,8 @@ import { validateBoard } from '../model/schema';
 import { useBoardStore } from './boardStore';
 import { useUiStore } from './uiStore';
 
+// Keeps the original project slug: renaming the key would orphan every board already
+// backed up in someone's browser.
 export const BACKUP_KEY = 'card-board.backup';
 const DEBOUNCE_MS = 500;
 

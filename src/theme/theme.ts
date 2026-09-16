@@ -3,6 +3,7 @@ import { create } from 'zustand';
 /** What the facilitator chose. `system` follows the operating system, and stamps nothing. */
 export type ThemeChoice = 'system' | 'light' | 'dark';
 
+// Keeps the original project slug, for the same reason as BACKUP_KEY in src/store/backup.ts.
 export const THEME_KEY = 'card-board.theme';
 export const THEME_CHOICES: ThemeChoice[] = ['system', 'light', 'dark'];
 

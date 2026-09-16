@@ -1,4 +1,4 @@
-# Card Board — Design Spec
+# Sessionboard — Design Spec
 
 Date: 2026-09-15
 Status: Approved for planning

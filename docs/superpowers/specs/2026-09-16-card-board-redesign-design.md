@@ -1,4 +1,4 @@
-# Card Board Redesign and Present Mode — Design Spec
+# Sessionboard Redesign and Present Mode — Design Spec
 
 Date: 2026-09-16
 Status: Approved for planning (visual direction approved by the user from the proposal artifact; Present mode approved; starter layouts added)
@@ -7,7 +7,7 @@ Builds on: `docs/superpowers/specs/2026-09-15-card-board-design.md` (all behavio
 
 ## 1. Purpose
 
-Give Card Board the approved "wall" design: the board fills the window, the tools become small floating instruments at its edges, and every visual choice is tuned for a room reading notes from a projector. Add Present mode, which hides the tools, zooms the board to a readable size, and steps through zones.
+Give Sessionboard the approved "wall" design: the board fills the window, the tools become small floating instruments at its edges, and every visual choice is tuned for a room reading notes from a projector. Add Present mode, which hides the tools, zooms the board to a readable size, and steps through zones.
 
 Scene that drives the design: a facilitator stands by a projector in a lit meeting room, driving the board from a laptop or iPad, while up to 15 people read notes from as far as six metres away.
 
