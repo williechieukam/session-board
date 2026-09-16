@@ -36,6 +36,7 @@ export function Timer() {
   const [custom, setCustom] = useState('');
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const remainingRef = useRef(remaining);
   remainingRef.current = remaining;
 
@@ -55,6 +56,8 @@ export function Timer() {
 
   useEffect(() => {
     if (!open) return;
+    // Focus the dialog itself, never a text field: a focused input pops the on-screen keyboard on tablets.
+    popoverRef.current?.focus();
     const onPointerDown = (e: PointerEvent) => { if (!rootRef.current?.contains(e.target as Node)) setOpen(false); };
     window.addEventListener('pointerdown', onPointerDown);
     return () => window.removeEventListener('pointerdown', onPointerDown);
@@ -102,10 +105,10 @@ export function Timer() {
         )}
       </div>
       {open && (
-        <div className="panel timer-popover" role="dialog" aria-label="Timer settings" onKeyDown={onPopoverKeyDown}>
+        <div ref={popoverRef} tabIndex={-1} className="panel timer-popover" role="dialog" aria-label="Timer settings" onKeyDown={onPopoverKeyDown}>
           <label className="field">
             <span>Exercise</span>
-            <input aria-label="Exercise name" placeholder="e.g. Dot voting" value={label} onChange={(e) => setLabel(e.target.value)} autoFocus />
+            <input aria-label="Exercise name" placeholder="e.g. Dot voting" value={label} onChange={(e) => setLabel(e.target.value)} />
           </label>
           <div className="presets">
             {PRESETS.map((m) => <button key={m} type="button" className="chip-btn" onClick={() => setMinutes(m)}>{m} min</button>)}

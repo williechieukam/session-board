@@ -21,7 +21,8 @@ test('starts idle and opens its settings from the pill', () => {
   expect(screen.queryByTestId('timer-display')).toBeNull();
   openSettings();
   expect(screen.getByRole('dialog', { name: 'Timer settings' })).toBeInTheDocument();
-  expect(document.activeElement).toBe(screen.getByLabelText('Exercise name'));
+  // The dialog itself takes focus, not a text field: focusing the input pops the on-screen keyboard on tablets.
+  expect(document.activeElement).toBe(screen.getByRole('dialog', { name: 'Timer settings' }));
 });
 
 test('preset, start, tick, pause from the pill, resume, reset', () => {
