@@ -31,7 +31,22 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - run: npx playwright install --with-deps chromium
+      # Cache the browser binary, not the OS packages: --with-deps does both, and only the
+      # download lives under ~/.cache/ms-playwright. Keyed on the exact Playwright version, so
+      # bumping the dependency invalidates the cache instead of restoring a mismatched browser.
+      - id: pw-version
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - id: pw-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.pw-version.outputs.version }}
+      - if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      # On a hit the binary is restored but the apt packages are not, and a browser without
+      # them will not launch.
+      - if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
       - run: npm run e2e
       - run: npm run build
       - uses: actions/upload-pages-artifact@v5
