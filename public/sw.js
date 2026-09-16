@@ -7,7 +7,16 @@
  * on first use, which is safe because Vite gives every built asset a content hash in its name.
  */
 const CACHE = 'sessionboard-v1';
-const SHELL = ['/', '/favicon.svg', '/manifest.webmanifest'];
+
+/*
+ * Derived, never hardcoded. The app is served from the origin root in development and from a
+ * project subpath on GitHub Pages, and a worker can only ever control the scope it was
+ * registered under — so its own scope is the one value that is right in both places. Getting
+ * this wrong fails quietly: the navigation fallback would never match, and offline mode is
+ * the whole point of the worker.
+ */
+const BASE = new URL(self.registration.scope).pathname;
+const SHELL = [BASE, `${BASE}favicon.svg`, `${BASE}manifest.webmanifest`];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -31,10 +40,10 @@ self.addEventListener('fetch', (event) => {
       fetch(request)
         .then((response) => {
           const copy = response.clone();
-          caches.open(CACHE).then((c) => c.put('/', copy));
+          caches.open(CACHE).then((c) => c.put(BASE, copy));
           return response;
         })
-        .catch(() => caches.match('/').then((hit) => hit || Response.error())),
+        .catch(() => caches.match(BASE).then((hit) => hit || Response.error())),
     );
     return;
   }
