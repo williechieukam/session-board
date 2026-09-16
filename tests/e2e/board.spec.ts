@@ -93,6 +93,12 @@ test('save then load round trip', async ({ page }) => {
   await expect(page.getByTestId('card')).toContainText('Persist me');
 });
 
+test('starter layout button creates the retro zones', async ({ page }) => {
+  await page.getByRole('button', { name: 'Retro' }).click();
+  await expect(page.getByTestId('zone')).toHaveCount(3);
+  await expect(page.locator('.zone-label')).toHaveText(['Went well', 'To improve', 'Actions']);
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();

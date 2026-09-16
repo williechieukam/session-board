@@ -204,6 +204,16 @@ button, input, textarea { font: inherit; color: inherit; }
   margin-right: 5px; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px;
   background: var(--panel); font-family: var(--font-mono); font-size: 12px; color: var(--ink);
 }
+.starters { display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); pointer-events: auto; }
+.starter-row { display: flex; gap: 10px; }
+.starter-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; border: 0; border-radius: 10px;
+  background: var(--panel); box-shadow: var(--shadow-panel); padding: 9px 14px; font-size: 14px; font-weight: 700;
+  color: var(--ink); cursor: pointer; pointer-events: auto;
+}
+.starter-btn:hover { background: var(--hover); }
+.starter-chips { display: flex; gap: 2px; }
+.starter-chip { width: 7px; height: 12px; border-radius: 2px; background: var(--chip); }
 .toast {
   position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%); z-index: var(--z-toast);
   padding: 10px 16px; border-radius: 999px; background: var(--ink); color: var(--panel); font-size: 14px; font-weight: 500; box-shadow: var(--shadow-panel);
