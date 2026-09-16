@@ -535,3 +535,32 @@ test('a keyboard-focused note shows the app focus ring, not the browser default'
   expect(ring.style).toBe('dashed');
   expect(ring.width).toBe('3px');
 });
+
+for (const width of [320, 375, 700]) {
+  test(`the save state stays visible and on screen at ${width} px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 812 });
+    await createCard(page, 180, 400, 'Phone note');
+    await page.keyboard.press('Escape');
+
+    // The one line telling a facilitator whether the workshop is safe. Hiding it on the
+    // devices most likely to lose the board is the opposite of what it is for.
+    const status = page.locator('.status');
+    await expect(status).toBeVisible();
+    await expect(status).toHaveText('Not saved to a file');
+
+    // Visible is not the same as readable: it has to sit inside the window, at a real size.
+    const box = (await status.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(-0.5);
+    expect(box.x + box.width).toBeLessThanOrEqual(width + 0.5);
+    expect(box.height).toBeGreaterThan(8);
+
+    // And it must not have cost the controls their place in the header.
+    for (const name of ['Save file', 'Board menu']) {
+      await expect(page.getByRole('button', { name })).toBeInViewport();
+    }
+    await expect(page.getByLabel('Board name')).toBeInViewport();
+    const pill = (await page.locator('.file-pill').boundingBox())!;
+    expect(pill.x).toBeGreaterThanOrEqual(-0.5);
+    expect(pill.x + pill.width).toBeLessThanOrEqual(width + 0.5);
+  });
+}
