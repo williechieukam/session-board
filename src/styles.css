@@ -147,6 +147,14 @@ button, input, textarea { font: inherit; color: inherit; }
   .icon-btn, .tip { transition: none; }
 }
 
+/*
+ * Where the top-left chrome ends. The session bar, the board menu and the timer popover are
+ * all positioned below the file pill, and each used to hard-code its own offset from the
+ * pill's 46px height. When the pill grew a second row those four numbers disagreed and the
+ * panels overlapped. One value now drives all of them.
+ */
+:root { --chrome-top: 62px; }   /* 16px top + a 46px pill */
+
 /* ===== File pill and board menu ===== */
 .file-pill { position: fixed; left: 16px; top: 16px; height: 46px; padding: 0 6px 0 12px; gap: 8px; max-width: calc(100vw - 32px); z-index: var(--z-chrome); }
 .app-mark { position: relative; flex: none; width: 22px; height: 22px; border-radius: var(--r-sm); background: var(--primary); }
@@ -174,7 +182,30 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 .menu-item { text-align: left; padding: 9px 12px; border: 0; border-radius: var(--r-sm); background: transparent; cursor: pointer; font-size: var(--text-sm); font-weight: 500; }
 .menu-item:hover, .menu-item:focus-visible { background: var(--hover); }
-@media (max-width: 700px) { .status { display: none; } }
+/*
+ * Narrow windows: the save state takes its own row instead of disappearing.
+ *
+ * It used to be `display: none` below 700px, which hid the one line saying whether the
+ * workshop is safe from exactly the people most likely to lose it — phone users, and anyone
+ * at 200% browser zoom, where the viewport is narrow for the same reason.
+ *
+ * Wrapping keeps the real sentence, filename and all, rather than a short form that would
+ * drop the part worth reading. `order` moves the line below the controls without touching
+ * DOM order; that is safe here only because .status is a non-focusable span, so nothing
+ * about the tab sequence changes.
+ */
+@media (max-width: 700px) {
+  :root { --chrome-top: 88px; }   /* 16px top + a 72px two-row pill */
+  .file-pill { flex-wrap: wrap; height: auto; min-height: 46px; padding-block: 6px; }
+  .file-pill .divider { display: none; }
+  /*
+   * `width: 0` matters as much as the basis. A shrink-to-fit panel measures its max-content as
+   * though every item were on one line, so the status inflated the pill by its own text width
+   * and pushed it into the session bar. At zero width it contributes nothing to that measure
+   * and then fills the row the basis gives it.
+   */
+  .status { order: 1; flex-basis: 100%; width: 0; white-space: normal; }
+}
 @media (prefers-reduced-motion: reduce) { .save-btn { transition: none; } }
 
 /* ===== Timer ===== */
@@ -263,7 +294,17 @@ button, input, textarea { font: inherit; color: inherit; }
 
 /* Narrow screens: stack chrome that would otherwise collide. */
 @media (max-width: 600px) {
-  .session-bar { top: 70px; }
+  .session-bar { top: calc(var(--chrome-top) + 8px); }
+  /*
+   * Flex wraps before it shrinks, so a name fixed at 16ch pushed Save file onto a third row
+   * and then kept its full width anyway. A narrow basis keeps every control on one row.
+   *
+   * It may also grow, but only here: once the session bar has dropped below the pill they no
+   * longer share a horizontal band, so a wide pill cannot run into it. Between 601 and 700 the
+   * bar is still top-right, and there the name keeps its full 16ch rather than being squeezed
+   * to less than it gets on a desktop.
+   */
+  .file-pill .board-name { flex: 1 1 8ch; width: auto; }
   .zoom-cluster { bottom: 76px; }
 }
 
@@ -423,9 +464,9 @@ button, input, textarea { font: inherit; color: inherit; }
  * off. Below the width where that can happen it pins to the window instead of the pill.
  */
 @media (max-width: 560px) {
-  .timer-popover { position: fixed; right: 16px; left: auto; top: 124px; }
+  .timer-popover { position: fixed; right: 16px; left: auto; top: calc(var(--chrome-top) + 62px); }
   /* Anchored to a chevron that sits well into the pill, so it needs the window, not the pill. */
-  .menu { position: fixed; right: 16px; left: auto; top: 72px; }
+  .menu { position: fixed; right: 16px; left: auto; top: calc(var(--chrome-top) + 10px); }
 }
 
 /*
