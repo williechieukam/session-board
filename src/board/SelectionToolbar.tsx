@@ -1,9 +1,11 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import type React from 'react';
 import { CARD_COLORS, ZONE_COLORS } from '../model/types';
 import { CARD_PALETTE, ZONE_PALETTE, type Swatch } from '../model/palette';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { boardToScreen, boundsOf } from './coords';
+import { boardSize } from './actions';
 import { IconButton } from '../chrome/IconButton';
 import { DuplicateIcon, MinusIcon, PlusIcon, TrashIcon } from '../chrome/icons';
 
@@ -16,10 +18,27 @@ const BELOW_GAP = 12;
 /** A swatch drawn as one flat colour, edge and fill alike. */
 const solid = (color: string): Swatch => ({ bg: color, border: color });
 
-/** Screen position of the toolbar for a selection whose screen-space box spans `top` to `bottom`. */
-export function toolbarPosition(left: number, top: number, bottom: number): { left: number; top: number } {
+/** Keep the toolbar this far from the window edge once it has to be clamped. */
+const EDGE_MARGIN = 8;
+
+/**
+ * Screen position of the toolbar for a selection whose screen-space box spans `top` to `bottom`.
+ *
+ * Pass `fit` to clamp horizontally. Without it the toolbar tracks the selection and can run off
+ * the side of a narrow window, taking Duplicate and Delete out of reach with nothing to scroll.
+ */
+export function toolbarPosition(
+  left: number,
+  top: number,
+  bottom: number,
+  fit?: { containerWidth: number; toolbarWidth: number },
+): { left: number; top: number } {
   const above = top - TOOLBAR_GAP;
-  return { left, top: above < TOP_CHROME_CLEARANCE ? bottom + BELOW_GAP : above };
+  const y = above < TOP_CHROME_CLEARANCE ? bottom + BELOW_GAP : above;
+  if (!fit || fit.toolbarWidth <= 0) return { left, top: y };
+  // A toolbar wider than the window pins to the left margin rather than centring off-screen.
+  const rightMost = Math.max(EDGE_MARGIN, fit.containerWidth - fit.toolbarWidth - EDGE_MARGIN);
+  return { left: Math.min(Math.max(left, EDGE_MARGIN), rightMost), top: y };
 }
 
 function swatchStyle(light: Swatch, dark: Swatch): React.CSSProperties {
@@ -33,6 +52,13 @@ export function SelectionToolbar() {
   const selection = useBoardStore((s) => s.selection);
   const board = useBoardStore((s) => s.board);
   const dragging = useUiStore((s) => s.dragOffset !== null);
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+  // Measured after paint: the toolbar's width depends on which controls this selection shows.
+  useLayoutEffect(() => {
+    const w = ref.current?.getBoundingClientRect().width ?? 0;
+    setWidth((prev) => (Math.abs(prev - w) > 0.5 ? w : prev));
+  });
   if (selection.length === 0 || dragging) return null;
 
   const st = useBoardStore.getState();
@@ -42,14 +68,14 @@ export function SelectionToolbar() {
   if (!bounds) return null;
   const tl = boardToScreen({ x: bounds.x, y: bounds.y }, board.viewport);
   const br = boardToScreen({ x: bounds.x + bounds.width, y: bounds.y + bounds.height }, board.viewport);
-  const style = toolbarPosition(tl.x, tl.y, br.y);
+  const style = toolbarPosition(tl.x, tl.y, br.y, { containerWidth: boardSize().width, toolbarWidth: width });
   const cardIds = cards.map((c) => c.id);
   const stop = (e: React.PointerEvent) => e.stopPropagation();
 
   if (cards.length > 0) {
     const shared = cards.every((c) => c.color === cards[0].color) ? cards[0].color : null;
     return (
-      <div className="panel selection-toolbar no-export" data-testid="selection-toolbar" role="toolbar" aria-label="Selection" style={style} onPointerDown={stop}>
+      <div ref={ref} className="panel selection-toolbar no-export" data-testid="selection-toolbar" role="toolbar" aria-label="Selection" style={style} onPointerDown={stop}>
         {CARD_COLORS.map((c) => (
           <button
             key={c}
@@ -80,7 +106,7 @@ export function SelectionToolbar() {
   if (zones.length === 1) {
     const z = zones[0];
     return (
-      <div className="panel selection-toolbar no-export" data-testid="selection-toolbar" role="toolbar" aria-label="Selection" style={style} onPointerDown={stop}>
+      <div ref={ref} className="panel selection-toolbar no-export" data-testid="selection-toolbar" role="toolbar" aria-label="Selection" style={style} onPointerDown={stop}>
         {ZONE_COLORS.map((c) => (
           <button
             key={c}

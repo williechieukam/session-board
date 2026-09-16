@@ -65,6 +65,21 @@ test('flips below the selection when it would sit under the top chrome', () => {
   expect(screen.getByTestId('selection-toolbar')).toHaveStyle({ left: '0px', top: '132px' });
 });
 
+test('toolbarPosition clamps to the window so no control lands off screen', () => {
+  const wide = { containerWidth: 1440, toolbarWidth: 461 };
+  // Room to spare: the toolbar tracks the selection untouched.
+  expect(toolbarPosition(300, 400, 520, wide).left).toBe(300);
+  // Past the right edge: pinned to the last position that still fits, 1440 - 461 - 8.
+  expect(toolbarPosition(1300, 400, 520, wide).left).toBe(971);
+  // Past the left edge: pinned to the margin.
+  expect(toolbarPosition(-40, 400, 520, wide).left).toBe(8);
+  // Wider than the window: start at the margin rather than centre it off screen.
+  expect(toolbarPosition(180, 400, 520, { containerWidth: 375, toolbarWidth: 461 }).left).toBe(8);
+  // Before the first measurement, and when no fit is given, the position is unchanged.
+  expect(toolbarPosition(1300, 400, 520, { containerWidth: 1440, toolbarWidth: 0 }).left).toBe(1300);
+  expect(toolbarPosition(1300, 400, 520).left).toBe(1300);
+});
+
 test('toolbarPosition keeps clear of the top chrome', () => {
   expect(toolbarPosition(40, 400, 520)).toEqual({ left: 40, top: 348 });
   expect(toolbarPosition(40, 128, 248)).toEqual({ left: 40, top: 76 });   // exactly at the clearance: stays above

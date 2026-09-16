@@ -174,7 +174,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .timer.done { box-shadow: 0 0 0 2px var(--sticker), var(--shadow-panel); }
 .timer-popover {
   position: absolute; right: 0; top: calc(100% + 10px); z-index: var(--z-popover);
-  width: 280px; padding: 14px; border-radius: 14px; flex-direction: column; align-items: stretch; gap: 12px;
+  width: 280px; max-width: calc(100vw - 32px); padding: 14px; border-radius: 14px; flex-direction: column; align-items: stretch; gap: 12px;
 }
 .field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
 .field input, .custom input { height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); font-size: 14px; }
@@ -380,3 +380,23 @@ button, input, textarea { font: inherit; color: inherit; }
 .menu-item .check { margin-left: auto; color: var(--primary); }
 .menu-item { display: flex; align-items: center; gap: 8px; }
 
+
+/* ===== Narrow windows: keep every control reachable ===== */
+
+/*
+ * The timer popover is anchored to its pill, which sits left of centre on a narrow window, so a
+ * 280 px panel hung off the left edge with its Exercise field, first preset and Start button cut
+ * off. Below the width where that can happen it pins to the window instead of the pill.
+ */
+@media (max-width: 560px) {
+  .timer-popover { position: fixed; right: 16px; left: auto; top: 124px; }
+}
+
+/*
+ * The selection toolbar is clamped horizontally in JS, but on a narrow window its twelve controls
+ * still need more than one row. Wrapping keeps Duplicate and Delete on screen instead of pushing
+ * them past the edge.
+ */
+@media (max-width: 560px) {
+  .selection-toolbar { flex-wrap: wrap; max-width: calc(100vw - 16px); justify-content: flex-start; }
+}

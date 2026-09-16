@@ -230,6 +230,29 @@ test('starting a new board asks before discarding a board restored from the back
   await restored.close();
 });
 
+test('on a narrow window every control stays on screen', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  const onScreen = (locator: ReturnType<typeof page.locator>) =>
+    locator.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { left: Math.round(r.left), right: Math.round(r.right), fits: r.left >= -0.5 && r.right <= window.innerWidth + 0.5 };
+    });
+
+  await createCard(page, 180, 400, 'Phone note');
+  const o = await boardOrigin(page);
+  await page.mouse.click(o.x + 180, o.y + 400);
+  await expect(page.getByTestId('selection-toolbar')).toBeVisible();
+  // Delete and Duplicate live at the far end of this toolbar; off screen means unreachable.
+  expect(await onScreen(page.getByTestId('selection-toolbar'))).toMatchObject({ fits: true });
+  await expect(page.getByRole('button', { name: 'Delete' })).toBeInViewport();
+
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Timer settings' }).click();
+  await expect(page.getByRole('dialog', { name: 'Timer settings' })).toBeVisible();
+  expect(await onScreen(page.locator('.timer-popover'))).toMatchObject({ fits: true });
+  await expect(page.getByRole('button', { name: 'Start', exact: true })).toBeInViewport();
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();
