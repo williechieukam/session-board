@@ -153,7 +153,12 @@ export function Board() {
       onPointerCancelCapture={pinch.onPointerUpCapture}
       onDoubleClick={onDoubleClick}
     >
-      <div className={'board-content' + (animating ? ' animating' : '')} style={{ transform: `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})` }}>
+      <div
+        className={'board-content' + (animating ? ' animating' : '')}
+        role="list"
+        aria-label="Notes and zones"
+        style={{ transform: `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})` }}
+      >
         {zones.map((z) => <Zone key={z.id} zone={z} />)}
         {cards.map((c) => <Card key={c.id} card={c} />)}
       </div>

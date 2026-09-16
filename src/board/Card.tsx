@@ -9,8 +9,17 @@ import { useDrag } from './useDrag';
 /** Stickers drawn on a note; the count beside them carries the exact number. */
 const MAX_STICKERS = 6;
 
+/** What a screen reader hears for a note: its text, then its votes. */
+export function cardLabel(text: string, votes: number): string {
+  const body = text.trim() === '' ? 'Empty note' : text.trim();
+  if (votes === 0) return body;
+  return `${body}, ${votes} vote${votes === 1 ? '' : 's'}`;
+}
+
 function CardView({ card }: { card: CardModel }) {
   const selected = useBoardStore((s) => s.selection.includes(card.id));
+  // Roving tabindex: Tab reaches the board once, then arrows move between notes.
+  const isTabStop = useBoardStore((s) => (s.selection.length > 0 ? s.selection[0] === card.id : s.board.cards[0]?.id === card.id));
   const offset = useUiStore((s) => (s.dragOffset && s.dragOffset.ids.includes(card.id) ? s.dragOffset : null));
   const editing = useUiStore((s) => s.editingId === card.id);
   const palette = CARD_PALETTE[card.color];
@@ -105,6 +114,19 @@ function CardView({ card }: { card: CardModel }) {
       data-testid="card"
       data-id={card.id}
       data-color={card.color}
+      role="listitem"
+      tabIndex={isTabStop ? 0 : -1}
+      aria-label={cardLabel(card.text, card.votes)}
+      aria-selected={selected}
+      onKeyDown={(e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        // Focus must not select, or the next arrow press would nudge the note instead of
+        // moving on. Enter escalates instead: select first, then open the editor.
+        const st = useBoardStore.getState();
+        if (st.selection.includes(card.id)) useUiStore.getState().setEditing(card.id);
+        else st.setSelection([card.id]);
+      }}
       style={{
         left: x, top: y,
         width: resizeRect?.width ?? card.width,

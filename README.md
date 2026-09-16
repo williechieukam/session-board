@@ -44,7 +44,8 @@ votes, which show as stickers along the bottom of the note.
 header to rename it. A zone counts the notes whose centre falls inside it.
 
 **Selecting.** Click a note, shift-click to add, or drag a band across empty
-canvas. Selected items move together, with the arrow keys as well as the
+canvas. Without a pointer, Tab into the board, walk between notes with the arrow
+keys, and press Enter to select one. Selected items move together, with the arrow keys as well as the
 pointer.
 
 **Getting around.** Hold space and drag to pan, or drag with the middle
@@ -75,7 +76,9 @@ wearing.
 | `N` | New note in the middle of the view |
 | `Z` | New zone |
 | `P` | Start Present mode |
-| Arrows | Nudge the selection by 1, or 10 with Shift |
+| `Tab` | Move into the board, then between the chrome |
+| Arrows | Move between notes when nothing is selected; nudge the selection by 1, or 10 with Shift, when something is |
+| `Enter` | Select the focused note, then again to edit it |
 | `Delete` | Delete the selection |
 | `Escape` | Stop editing, clear the selection, or end Present mode |
 | `Ctrl`/`Cmd` `Z` | Undo, and `Shift Z` or `Y` to redo |

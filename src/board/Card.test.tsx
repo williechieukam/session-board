@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { Card } from './Card';
+import { Card, cardLabel } from './Card';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { createCard, createEmptyBoard } from '../model/types';
@@ -159,4 +159,11 @@ test('escape commits and leaves editing', () => {
   fireEvent.keyDown(ta, { key: 'Escape' });
   expect(useBoardStore.getState().board.cards[0].text).toBe('x');
   expect(useUiStore.getState().editingId).toBeNull();
+});
+
+test('a note tells a screen reader its text and its votes', () => {
+  expect(cardLabel('Flaky CI', 0)).toBe('Flaky CI');
+  expect(cardLabel('Flaky CI', 1)).toBe('Flaky CI, 1 vote');
+  expect(cardLabel('Flaky CI', 4)).toBe('Flaky CI, 4 votes');
+  expect(cardLabel('   ', 0)).toBe('Empty note');
 });

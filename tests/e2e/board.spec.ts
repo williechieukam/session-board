@@ -283,6 +283,38 @@ test('exporting an empty board explains rather than reporting a failure', async 
   await expect(toast).toHaveText('Nothing to export yet. Add a note first.');
 });
 
+test('a keyboard alone can reach a note, select it and edit it', async ({ page }) => {
+  await createCard(page, 250, 250, 'First note');
+  await createCard(page, 650, 250, 'Second note');
+  await page.keyboard.press('Escape'); // nothing selected, so arrows walk focus
+
+  const focused = () => page.evaluate(() => {
+    const el = document.activeElement as HTMLElement | null;
+    return { isCard: !!el?.classList.contains('card'), label: el?.getAttribute('aria-label') ?? null };
+  });
+
+  // Tab into the board rather than assuming a position in the order.
+  let reached = false;
+  for (let i = 0; i < 25 && !reached; i += 1) {
+    await page.keyboard.press('Tab');
+    reached = (await focused()).isCard;
+  }
+  expect(reached).toBe(true);
+  expect((await focused()).label).toBe('First note');
+
+  await page.keyboard.press('ArrowRight');
+  expect((await focused()).label).toBe('Second note');
+
+  // Enter selects, and the selection toolbar follows.
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.card.selected')).toHaveCount(1);
+  await expect(page.getByTestId('selection-toolbar')).toBeVisible();
+
+  // Enter again opens the editor, so a note can be written without a pointer.
+  await page.keyboard.press('Enter');
+  await expect(page.locator('textarea.card-editor')).toBeFocused();
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();
