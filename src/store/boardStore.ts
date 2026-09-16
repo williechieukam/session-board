@@ -18,6 +18,8 @@ export interface BoardState {
 
   addCard(init: { x: number; y: number } & Partial<Card>): string;
   updateCardText(id: string, text: string): void;
+  /** Grow a card so its text fits. Never shrinks: a hand-sized note keeps the size it was given. */
+  growCardTo(id: string, height: number): void;
   /** Pass `{ coalesce }` for keyboard nudges: `coalesce: true` extends the current nudge run instead of recording. */
   moveItems(ids: string[], dx: number, dy: number, opts?: { coalesce?: boolean }): void;
   resizeItem(id: string, rect: Rect): void;
@@ -120,6 +122,19 @@ export const useBoardStore = create<BoardState>()((set, get) => {
       }
       mutate(apply);
       if (opts) set({ nudgeRun: [...ids] });
+    },
+
+    growCardTo(id, height) {
+      // Not recorded in history: growing to fit text is a consequence of the edit that caused it,
+      // so undoing the edit should not need a second press to undo the growth.
+      set((st) => {
+        const card = st.board.cards.find((c) => c.id === id);
+        if (!card || height <= card.height) return {};
+        return {
+          board: { ...st.board, cards: st.board.cards.map((c) => (c.id === id ? { ...c, height } : c)) },
+          dirty: true,
+        };
+      });
     },
 
     resizeItem(id, rect) {

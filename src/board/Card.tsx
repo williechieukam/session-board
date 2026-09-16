@@ -1,4 +1,4 @@
-import { memo, useRef, useState } from 'react';
+import { memo, useLayoutEffect, useRef, useState } from 'react';
 import type React from 'react';
 import { CARD_MIN_SIZE, type Rect, type Card as CardModel } from '../model/types';
 import { CARD_PALETTE } from '../model/palette';
@@ -17,6 +17,16 @@ function CardView({ card }: { card: CardModel }) {
   const x = card.x + (offset?.dx ?? 0);
   const y = card.y + (offset?.dy ?? 0);
   const stickers = Math.min(card.votes, MAX_STICKERS);
+
+  const textRef = useRef<HTMLDivElement>(null);
+  // A note that cannot show all its text is a note that lies about its contents, and the
+  // truncation would be baked into Present mode and the PNG export too. Grow to fit instead.
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!el || editing) return;
+    const hidden = el.scrollHeight - el.clientHeight;
+    if (hidden > 1) useBoardStore.getState().growCardTo(card.id, card.height + hidden);
+  });
 
   const dragIds = useRef<string[]>([]);
   const zoom = () => useBoardStore.getState().board.viewport.zoom;
@@ -119,14 +129,13 @@ function CardView({ card }: { card: CardModel }) {
           onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); commitText(e.currentTarget.value); } }}
         />
       ) : (
-        <div className="card-text">{card.text}</div>
+        <div ref={textRef} className="card-text">{card.text}</div>
       )}
-      {card.votes > 0 && (
-        <div className="card-votes">
-          {Array.from({ length: stickers }, (_, i) => <span key={i} className="vote-sticker" />)}
-          <span className="vote-count">{card.votes}</span>
-        </div>
-      )}
+      {/* Always present, so adding the first vote cannot steal a line of visible text. */}
+      <div className="card-votes" aria-hidden={card.votes === 0}>
+        {Array.from({ length: stickers }, (_, i) => <span key={i} className="vote-sticker" />)}
+        {card.votes > 0 && <span className="vote-count">{card.votes}</span>}
+      </div>
       {selected && (
         <div className="resize-handle no-export" data-testid="resize-handle" onPointerDown={(e) => { if (wantsPan(e)) return; e.stopPropagation(); onResizeDown(e); }} />
       )}

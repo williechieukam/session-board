@@ -53,7 +53,7 @@ export async function openFromFile(): Promise<void> {
   if (!confirmDiscard('Load a file')) return;
   const result = await loadBoardFromFile();
   if (!result) return;
-  if (!result.ok) { toast(`Could not load: ${result.error}`); return; }
+  if (!result.ok) { toast(`That file is not a Sessionboard board. ${result.error}.`); return; }
   useBoardStore.getState().loadBoard(result.board);
   // The board came from a file, so it exists on disk until the next edit.
   useBoardStore.getState().markSavedToFile();
@@ -69,10 +69,16 @@ export function commitOpenEdit(): void {
 export async function exportPng(): Promise<void> {
   const content = boardContainer.el?.querySelector<HTMLElement>('.board-content');
   if (!content) return;
+  // An empty board is not a failure, so it does not get reported as one.
+  const { board } = useBoardStore.getState();
+  if (board.cards.length === 0 && board.zones.length === 0) {
+    toast('Nothing to export yet. Add a note first.');
+    return;
+  }
   commitOpenEdit();
   try {
     await exportBoardPng(content, useBoardStore.getState().board);
   } catch (err) {
-    toast(`Export failed: ${err instanceof Error ? err.message : String(err)}`);
+    toast(`Could not save the PNG. ${err instanceof Error ? err.message : String(err)}.`);
   }
 }

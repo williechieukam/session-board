@@ -34,9 +34,14 @@ test('caps stickers at 6 and always shows the count', () => {
   expect(el.querySelector('.vote-count')).toHaveTextContent('12');
 });
 
-test('no vote row without votes', () => {
+test('the vote row is reserved but empty without votes, so votes never reflow the text', () => {
   render(<Card card={createCard({ x: 0, y: 0 }, 1)} />);
-  expect(screen.getByTestId('card').querySelector('.card-votes')).toBeNull();
+  const row = screen.getByTestId('card').querySelector('.card-votes');
+  // Present, so adding the first vote cannot steal a line of visible text.
+  expect(row).not.toBeNull();
+  expect(row!.querySelectorAll('.vote-sticker')).toHaveLength(0);
+  expect(row!.querySelector('.vote-count')).toBeNull();
+  expect(row).toHaveAttribute('aria-hidden', 'true');
 });
 
 test('selected class and drag offset', () => {

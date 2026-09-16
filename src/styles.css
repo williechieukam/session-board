@@ -58,7 +58,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .card.selected { outline: 2px solid var(--primary); outline-offset: 3px; }
 .card-text { flex: 1; min-height: 0; overflow: hidden; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 20px; line-height: 1.3; font-weight: 500; }
 .card-editor { flex: 1; min-height: 0; width: 100%; resize: none; border: none; outline: none; background: transparent; padding: 0; font-size: 20px; line-height: 1.3; font-weight: 500; color: var(--note-ink-use); }
-.card-votes { display: flex; align-items: center; min-height: 16px; margin-top: 6px; }
+.card-votes { display: flex; align-items: center; height: 18px; margin-top: 6px; }
 .vote-sticker { flex: none; width: 13px; height: 13px; border-radius: 50%; margin-right: -3px; background: var(--sticker); box-shadow: 0 0 0 2px var(--note-use), 0 1px 1px oklch(0.3 0.03 240 / 0.3); }
 .vote-count { margin-left: 11px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
@@ -400,3 +400,7 @@ button, input, textarea { font: inherit; color: inherit; }
 @media (max-width: 560px) {
   .selection-toolbar { flex-wrap: wrap; max-width: calc(100vw - 16px); justify-content: flex-start; }
 }
+
+/* The custom-minutes bound, stated rather than enforced silently. */
+.custom-hint { margin: -6px 0 0; font-size: 12px; color: var(--muted); }
+.chip-btn:disabled { opacity: 0.45; cursor: default; }

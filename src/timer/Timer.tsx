@@ -68,6 +68,10 @@ export function Timer() {
   const state = done ? 'done' : running ? 'running' : started ? 'paused' : 'idle';
   const urgent = running && remaining <= URGENT_SECONDS;
 
+  // Typing 999 and pressing Set used to do nothing and say nothing.
+  const customMinutes = Math.floor(Number(custom));
+  const customValid = custom.trim() !== '' && Number.isFinite(customMinutes) && customMinutes >= 1 && customMinutes <= 180;
+
   const setMinutes = (min: number) => { setEndAt(null); setStarted(false); setTotal(min * 60); setRemaining(min * 60); };
   const start = () => { if (remaining > 0) { setStarted(true); setEndAt(Date.now() + remaining * 1000); } };
   const pause = () => setEndAt(null);
@@ -123,8 +127,9 @@ export function Timer() {
           </div>
           <div className="custom">
             <input aria-label="Custom minutes" type="number" min={1} max={180} placeholder="min" value={custom} onChange={(e) => setCustom(e.target.value)} />
-            <button type="button" className="chip-btn" onClick={() => { const m = Math.floor(Number(custom)); if (m >= 1 && m <= 180) setMinutes(m); }}>Set</button>
+            <button type="button" className="chip-btn" disabled={!customValid} onClick={() => setMinutes(customMinutes)}>Set</button>
           </div>
+          <p className="custom-hint">{custom.trim() === '' || customValid ? '1 to 180 minutes' : `${custom} is outside 1 to 180 minutes`}</p>
           <div className="actions">
             {running
               ? <button type="button" className="primary-btn" onClick={pause}>Pause</button>

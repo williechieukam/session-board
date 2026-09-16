@@ -112,3 +112,22 @@ test('Escape and a pointerdown outside close the settings', () => {
   fireEvent.pointerDown(screen.getByText('elsewhere'));
   expect(screen.queryByRole('dialog')).toBeNull();
 });
+
+test('custom minutes outside the range disables Set and says why', () => {
+  render(<Timer />);
+  openSettings();
+  const set = () => screen.getByRole('button', { name: 'Set' });
+  expect(set()).toBeDisabled();
+  expect(screen.getByText('1 to 180 minutes')).toBeInTheDocument();
+
+  fireEvent.change(screen.getByLabelText('Custom minutes'), { target: { value: '999' } });
+  expect(set()).toBeDisabled();
+  expect(screen.getByText('999 is outside 1 to 180 minutes')).toBeInTheDocument();
+
+  fireEvent.change(screen.getByLabelText('Custom minutes'), { target: { value: '25' } });
+  expect(set()).toBeEnabled();
+  fireEvent.click(set());
+  // Setting a duration leaves the timer idle, so start it before reading the countdown.
+  fireEvent.click(screen.getByText('Start'));
+  expect(display()).toBe('25:00');
+});

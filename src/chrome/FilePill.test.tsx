@@ -139,19 +139,33 @@ test('open file replaces the board or toasts the error', async () => {
   vi.mocked(fileIo.loadBoardFromFile).mockResolvedValue({ ok: false, error: 'Unsupported board version 2' });
   openMenu();
   fireEvent.click(item('Open file…'));
-  await waitFor(() => expect(useUiStore.getState().toast).toBe('Could not load: Unsupported board version 2'));
+  await waitFor(() => expect(useUiStore.getState().toast).toBe('That file is not a Sessionboard board. Unsupported board version 2.'));
   expect(st().board.name).toBe('Loaded');
 });
 
-test('export toasts on failure and returns focus to the menu button', async () => {
+test('exporting an empty board explains instead of reporting a failure', async () => {
   const container = document.createElement('div');
   container.innerHTML = '<div class="board-content"></div>';
   boardContainer.el = container as HTMLDivElement;
-  vi.mocked(exportBoardPng).mockRejectedValue(new Error('The board is empty'));
   render(<FilePill />);
   openMenu();
   fireEvent.click(item('Export PNG'));
-  await waitFor(() => expect(useUiStore.getState().toast).toBe('Export failed: The board is empty'));
+  // An empty board is a guard condition, not a crash, so the rasteriser is never reached.
+  await waitFor(() => expect(useUiStore.getState().toast).toBe('Nothing to export yet. Add a note first.'));
+  expect(exportBoardPng).not.toHaveBeenCalled();
+  boardContainer.el = null;
+});
+
+test('a genuine export failure toasts and returns focus to the menu button', async () => {
+  const container = document.createElement('div');
+  container.innerHTML = '<div class="board-content"></div>';
+  boardContainer.el = container as HTMLDivElement;
+  act(() => { st().addCard({ x: 0, y: 0 }); });
+  vi.mocked(exportBoardPng).mockRejectedValue(new Error('Canvas unavailable'));
+  render(<FilePill />);
+  openMenu();
+  fireEvent.click(item('Export PNG'));
+  await waitFor(() => expect(useUiStore.getState().toast).toBe('Could not save the PNG. Canvas unavailable.'));
   expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Board menu' }));
   boardContainer.el = null;
 });

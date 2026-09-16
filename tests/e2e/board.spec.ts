@@ -253,6 +253,36 @@ test('on a narrow window every control stays on screen', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Start', exact: true })).toBeInViewport();
 });
 
+test('a long note grows to fit, and voting never steals a line of it', async ({ page }) => {
+  const long = 'Continuous integration is flaky and it has cost us a lot of time this quarter';
+  await createCard(page, 300, 300, long);
+  const note = page.getByTestId('card');
+  const textBox = () => note.locator('.card-text').evaluate((el) => ({
+    hidden: el.scrollHeight - el.clientHeight,
+    height: Math.round(el.getBoundingClientRect().height),
+  }));
+
+  // Nothing of the note's own text may be hidden.
+  expect((await textBox()).hidden).toBeLessThanOrEqual(1);
+
+  const before = await textBox();
+  const o = await boardOrigin(page);
+  await page.mouse.click(o.x + 300, o.y + 300);
+  await page.getByRole('button', { name: 'Add vote' }).click();
+  await page.getByRole('button', { name: 'Add vote' }).click();
+  await page.waitForTimeout(200);
+  const after = await textBox();
+  expect(after.height).toBe(before.height);
+  expect(after.hidden).toBeLessThanOrEqual(1);
+});
+
+test('exporting an empty board explains rather than reporting a failure', async ({ page }) => {
+  await page.getByRole('button', { name: 'Board menu' }).click();
+  await page.getByRole('menuitem', { name: 'Export PNG' }).click();
+  const toast = page.getByRole('status');
+  await expect(toast).toHaveText('Nothing to export yet. Add a note first.');
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();

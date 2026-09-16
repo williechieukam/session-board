@@ -264,3 +264,20 @@ test('savedToFile tracks whether a file holds the board, and a backup restore do
   expect(st().dirty).toBe(false);
   expect(st().savedToFile).toBe(false);
 });
+
+test('growCardTo grows a card to fit, never shrinks it, and is not its own undo step', () => {
+  const st = () => useBoardStore.getState();
+  useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false, savedToFile: false });
+  const id = st().addCard({ x: 0, y: 0 });
+  const original = st().board.cards[0].height;
+  const entriesAfterAdd = st().history.past.length;
+
+  st().growCardTo(id, original + 40);
+  expect(st().board.cards[0].height).toBe(original + 40);
+  // Undoing the edit that caused the growth must not need a second press.
+  expect(st().history.past.length).toBe(entriesAfterAdd);
+
+  // A hand-sized note keeps the size it was given.
+  st().growCardTo(id, original);
+  expect(st().board.cards[0].height).toBe(original + 40);
+});
