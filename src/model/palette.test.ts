@@ -13,7 +13,26 @@ test('every card and zone colour has an OKLCH fill and edge', () => {
 });
 
 test('notes use the retuned projector palette', () => {
-  expect(CARD_PALETTE.yellow).toEqual({ bg: 'oklch(0.95 0.11 100)', border: 'oklch(0.84 0.13 95)' });
-  expect(CARD_PALETTE.white).toEqual({ bg: 'oklch(1 0 0)', border: 'oklch(0.87 0.008 240)' });
-  expect(ZONE_PALETTE.red).toEqual({ bg: 'oklch(0.975 0.02 25)', border: 'oklch(0.86 0.05 25)' });
+  expect(CARD_PALETTE.yellow).toMatchObject({ bg: 'oklch(0.95 0.11 100)', border: 'oklch(0.84 0.13 95)' });
+  expect(CARD_PALETTE.white).toMatchObject({ bg: 'oklch(1 0 0)', border: 'oklch(0.87 0.008 240)' });
+  expect(ZONE_PALETTE.red).toMatchObject({ bg: 'oklch(0.975 0.02 25)', border: 'oklch(0.86 0.05 25)' });
+});
+
+/** Lightness is the first number in `oklch(L C H)`. */
+const lightnessOf = (color: string) => Number(/^oklch\((\S+)/.exec(color)![1]);
+
+test('every colour carries a dark variant, and every dark variant is darker', () => {
+  for (const p of [...Object.values(CARD_PALETTE), ...Object.values(ZONE_PALETTE)]) {
+    expect(p.dark.bg).toMatch(OKLCH);
+    expect(p.dark.border).toMatch(OKLCH);
+    expect(lightnessOf(p.dark.bg)).toBeLessThan(lightnessOf(p.bg));
+  }
+});
+
+test('a dark note carries light ink, so its text stays legible', () => {
+  for (const p of Object.values(CARD_PALETTE)) {
+    expect(p.dark.ink).toMatch(OKLCH);
+    // Deep note, light ink: a wide lightness gap is what keeps 20 px text readable.
+    expect(lightnessOf(p.dark.ink) - lightnessOf(p.dark.bg)).toBeGreaterThan(0.4);
+  }
 });

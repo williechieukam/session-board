@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import type React from 'react';
 import { exportPng, newBoard, openFromFile } from './fileActions';
-import { ChevronDownIcon } from './icons';
+import { CheckIcon, ChevronDownIcon } from './icons';
+import { THEME_CHOICES, useThemeStore, type ThemeChoice } from '../theme/theme';
+
+const THEME_LABELS: Record<ThemeChoice, string> = { system: 'System', light: 'Light', dark: 'Dark' };
 
 const ITEMS: { label: string; run: () => void | Promise<void> }[] = [
   { label: 'New board', run: newBoard },
@@ -11,6 +14,7 @@ const ITEMS: { label: string; run: () => void | Promise<void> }[] = [
 
 export function BoardMenu() {
   const [open, setOpen] = useState(false);
+  const theme = useThemeStore((st) => st.choice);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -75,6 +79,24 @@ export function BoardMenu() {
               {it.label}
             </button>
           ))}
+          <div className="menu-group" role="group" aria-label="Theme">
+            <span className="menu-heading">Theme</span>
+            {THEME_CHOICES.map((choice, i) => (
+              <button
+                key={choice}
+                ref={(el) => { itemRefs.current[ITEMS.length + i] = el; }}
+                type="button"
+                role="menuitemradio"
+                aria-checked={choice === theme}
+                className="menu-item"
+                tabIndex={-1}
+                onClick={() => useThemeStore.getState().setChoice(choice)}
+              >
+                {THEME_LABELS[choice]}
+                {choice === theme && <span className="check"><CheckIcon /></span>}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -40,6 +40,35 @@ test('exports the item bounds plus margin and downloads <name>.png', async () =>
   download.mockRestore();
 });
 
+test('a PNG is always the light board, and the app gets its theme back', async () => {
+  const board = createEmptyBoard('Wall');
+  board.cards.push(createCard({ x: 0, y: 0 }, 1));
+  const el = document.createElement('div');
+  const root = document.documentElement;
+  let themeDuringRender: string | null = 'not captured';
+  vi.mocked(toPng).mockImplementation(async () => { themeDuringRender = root.getAttribute('data-theme'); return PNG; });
+  const download = vi.spyOn(fileIo, 'downloadBlob').mockImplementation(() => {});
+
+  root.setAttribute('data-theme', 'dark');
+  await exportBoardPng(el, board);
+  expect(themeDuringRender).toBe('light');
+  expect(root.getAttribute('data-theme')).toBe('dark');
+
+  // Following the system means no stamp at all, and none must be left behind.
+  root.removeAttribute('data-theme');
+  await exportBoardPng(el, board);
+  expect(themeDuringRender).toBe('light');
+  expect(root.hasAttribute('data-theme')).toBe(false);
+
+  // A failed render must not strand the app in the light theme either.
+  root.setAttribute('data-theme', 'dark');
+  vi.mocked(toPng).mockRejectedValue(new Error('canvas unavailable'));
+  await expect(exportBoardPng(el, board)).rejects.toThrow('canvas unavailable');
+  expect(root.getAttribute('data-theme')).toBe('dark');
+  root.removeAttribute('data-theme');
+  download.mockRestore();
+});
+
 test('empty board throws', async () => {
   await expect(exportBoardPng(document.createElement('div'), createEmptyBoard())).rejects.toThrow('The board is empty');
 });

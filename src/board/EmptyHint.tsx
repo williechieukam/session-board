@@ -4,8 +4,8 @@ import { useUiStore } from '../store/uiStore';
 import { ZONE_PALETTE } from '../model/palette';
 import { LAYOUTS, applyLayout, type Layout } from './layouts';
 
-function chipStyle(border: string): React.CSSProperties {
-  return { '--chip': border } as React.CSSProperties;
+function chipStyle(light: string, dark: string): React.CSSProperties {
+  return { '--chip': light, '--chip-dark': dark } as React.CSSProperties;
 }
 
 function StarterButton({ layout }: { layout: Layout }) {
@@ -14,7 +14,7 @@ function StarterButton({ layout }: { layout: Layout }) {
       {layout.label}
       <span className="starter-chips" aria-hidden="true">
         {layout.zones.map((zone) => (
-          <span key={zone.label} className="starter-chip" style={chipStyle(ZONE_PALETTE[zone.color].border)} />
+          <span key={zone.label} className="starter-chip" style={chipStyle(ZONE_PALETTE[zone.color].border, ZONE_PALETTE[zone.color].dark.border)} />
         ))}
       </span>
     </button>

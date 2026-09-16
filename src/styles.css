@@ -20,6 +20,12 @@
   --z-selection-toolbar: 150;
   --z-popover: 200;
   --z-toast: 300;
+  --band-fill: oklch(0.44 0.10 232 / 0.10);
+  --hint-dash: oklch(0.72 0.02 240);
+  --primary-hover: oklch(0.40 0.10 232);
+  --exit-hover: oklch(0.90 0.045 232);
+  --shadow-note-flat: 0 1px 1px oklch(0.3 0.03 240 / 0.08), 0 10px 16px -10px oklch(0.3 0.03 240 / 0.3);
+  color-scheme: light;
 }
 
 /* ===== Base ===== */
@@ -38,20 +44,20 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 .board.panning { cursor: grab; }
 .board-content { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 0 0; }
-.selection-box { position: absolute; border: 1px solid var(--primary); background: oklch(0.44 0.10 232 / 0.10); pointer-events: none; }
+.selection-box { position: absolute; border: 1px solid var(--primary); background: var(--band-fill); pointer-events: none; }
 
 /* ===== Notes ===== */
 .card {
   position: absolute; display: flex; flex-direction: column; justify-content: space-between;
   padding: 12px 13px 10px; border-radius: 3px 3px 12px 3px;
-  background: var(--note); box-shadow: var(--shadow-note); cursor: grab;
+  background: var(--note-use); color: var(--note-ink-use); box-shadow: var(--shadow-note); cursor: grab;
 }
-.card[data-color="white"] { box-shadow: 0 0 0 1px var(--note-edge), 0 1px 1px oklch(0.3 0.03 240 / 0.08), 0 10px 16px -10px oklch(0.3 0.03 240 / 0.3); }
+.card[data-color="white"] { box-shadow: 0 0 0 1px var(--note-edge-use), var(--shadow-note-flat); }
 .card.selected { outline: 2px solid var(--primary); outline-offset: 3px; }
 .card-text { flex: 1; min-height: 0; overflow: hidden; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 20px; line-height: 1.3; font-weight: 500; }
 .card-editor { flex: 1; min-height: 0; width: 100%; resize: none; border: none; outline: none; background: transparent; padding: 0; font-size: 20px; line-height: 1.3; font-weight: 500; color: var(--ink); }
 .card-votes { display: flex; align-items: center; min-height: 16px; margin-top: 6px; }
-.vote-sticker { flex: none; width: 13px; height: 13px; border-radius: 50%; margin-right: -3px; background: var(--sticker); box-shadow: 0 0 0 2px var(--note), 0 1px 1px oklch(0.3 0.03 240 / 0.3); }
+.vote-sticker { flex: none; width: 13px; height: 13px; border-radius: 50%; margin-right: -3px; background: var(--sticker); box-shadow: 0 0 0 2px var(--note-use), 0 1px 1px oklch(0.3 0.03 240 / 0.3); }
 .vote-count { margin-left: 11px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
 /* Resize handle: a 24 px touch target centred on the corner, drawing an 11 px square. */
@@ -62,7 +68,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .exporting .card.selected, .exporting .zone.selected { outline: none; }
 
 /* ===== Zones ===== */
-.zone { position: absolute; border-radius: 16px; background: var(--zone-fill); border: 1px solid var(--zone-edge); pointer-events: none; }
+.zone { position: absolute; border-radius: 16px; background: var(--zone-fill-use); border: 1px solid var(--zone-edge-use); pointer-events: none; }
 .zone.selected { outline: 2px solid var(--primary); outline-offset: 2px; }
 .zone-header {
   pointer-events: auto; position: absolute; left: 0; right: 0; top: 0; height: 44px;
@@ -182,12 +188,12 @@ button, input, textarea { font: inherit; color: inherit; }
 .selection-toolbar { position: absolute; z-index: var(--z-selection-toolbar); padding: 5px; gap: 3px; border-radius: 12px; }
 .swatch {
   flex: none; width: 22px; height: 22px; margin: 3px; padding: 0; border: 0; border-radius: 5px; cursor: pointer;
-  background: var(--swatch); box-shadow: inset 0 0 0 1px var(--swatch-edge);
+  background: var(--swatch-use); box-shadow: inset 0 0 0 1px var(--swatch-edge-use);
 }
-.swatch.is-on { box-shadow: inset 0 0 0 1px var(--swatch-edge), 0 0 0 2px var(--panel), 0 0 0 4px var(--primary); }
+.swatch.is-on { box-shadow: inset 0 0 0 1px var(--swatch-edge-use), 0 0 0 2px var(--panel), 0 0 0 4px var(--primary); }
 .stepper { display: flex; align-items: center; gap: 2px; }
 .stepper .icon-btn { width: 32px; height: 32px; }
-.step-value { --note: var(--panel); display: flex; align-items: center; gap: 7px; min-width: 22px; padding: 0 4px; font-family: var(--font-mono); font-size: 14px; font-weight: 600; }
+.step-value { --note-use: var(--panel); display: flex; align-items: center; gap: 7px; min-width: 22px; padding: 0 4px; font-family: var(--font-mono); font-size: 14px; font-weight: 600; }
 .step-value .vote-sticker { margin-right: 0; }
 .selection-toolbar > .icon-btn { width: 34px; height: 34px; }
 .selection-toolbar .danger { color: var(--coral-deep); }
@@ -197,7 +203,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .empty-hint { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 22px; pointer-events: none; }
 .empty-note {
   width: 240px; height: 160px; display: grid; place-items: center; padding: 20px; text-align: center;
-  border: 2px dashed oklch(0.72 0.02 240); border-radius: 3px 3px 14px 3px; font-size: 19px; font-weight: 700; line-height: 1.3;
+  border: 2px dashed var(--hint-dash); border-radius: 3px 3px 14px 3px; font-size: 19px; font-weight: 700; line-height: 1.3;
 }
 .keys { display: flex; gap: 14px; font-size: 13px; color: var(--muted); }
 .keys kbd {
@@ -213,7 +219,7 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 .starter-btn:hover { background: var(--hover); }
 .starter-chips { display: flex; gap: 2px; }
-.starter-chip { width: 7px; height: 12px; border-radius: 2px; background: var(--chip); }
+.starter-chip { width: 7px; height: 12px; border-radius: 2px; background: var(--chip-use); }
 .toast {
   position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%); z-index: var(--z-toast);
   padding: 10px 16px; border-radius: 999px; background: var(--ink); color: var(--panel); font-size: 14px; font-weight: 500; box-shadow: var(--shadow-panel);
@@ -235,7 +241,7 @@ button, input, textarea { font: inherit; color: inherit; }
   border: 0; border-radius: 14px; background: var(--primary); color: var(--panel); box-shadow: var(--shadow-panel);
   font-size: 15px; font-weight: 700; cursor: pointer; transition: background-color 150ms var(--ease-out);
 }
-.present-btn:hover { background: oklch(0.40 0.10 232); }
+.present-btn:hover { background: var(--primary-hover); }
 .present-btn:hover .tip, .present-btn:focus-visible .tip { opacity: 1; visibility: visible; transition-delay: 400ms, 400ms; }
 .chrome-hideable { transition: opacity 200ms var(--ease-out), visibility 0s linear 0s; }
 .is-presenting .chrome-hideable { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 200ms var(--ease-out), visibility 0s linear 200ms; }
@@ -256,7 +262,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .present-pos { min-width: 48px; text-align: center; font-family: var(--font-mono); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .hint-keys { padding: 0 8px; font-size: 13px; color: var(--muted); white-space: nowrap; }
 .exit-btn { height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: 14px; font-weight: 700; cursor: pointer; }
-.exit-btn:hover { background: oklch(0.90 0.045 232); }
+.exit-btn:hover { background: var(--exit-hover); }
 @media (max-width: 700px) { .hint-keys { display: none; } }
 @media (prefers-reduced-motion: reduce) { .present-btn, .chrome-hideable, .is-presenting .chrome-hideable { transition: none; } }
 
@@ -292,3 +298,79 @@ button, input, textarea { font: inherit; color: inherit; }
 /* Starter buttons keep their label on one line and wrap as whole buttons instead. */
 .starter-row { flex-wrap: wrap; justify-content: center; }
 .starter-btn { white-space: nowrap; }
+
+/* ===== Dark theme ===== */
+/*
+ * Three states. No stamp on the root follows the operating system, while data-theme="light"
+ * and data-theme="dark" override it. That is why every dark rule appears twice: once behind
+ * the media query, guarded so an explicit light choice still wins, and once behind the stamp.
+ * Component rules never change between themes. Only these values move.
+ *
+ * Notes and zones take their colours from inline custom properties, so the components hand CSS
+ * both themes' values and the aliases below choose which half applies.
+ */
+.card { --note-use: var(--note); --note-edge-use: var(--note-edge); --note-ink-use: var(--ink); }
+.zone { --zone-fill-use: var(--zone-fill); --zone-edge-use: var(--zone-edge); }
+.swatch { --swatch-use: var(--swatch); --swatch-edge-use: var(--swatch-edge); }
+.starter-chip { --chip-use: var(--chip); }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --wall: oklch(0.21 0.012 240);
+    --wall-dot: oklch(0.32 0.015 240);
+    --panel: oklch(0.27 0.012 240);
+    --ink: oklch(0.96 0.004 240);
+    --muted: oklch(0.72 0.012 240);
+    --line: oklch(0.36 0.012 240);
+    --primary: oklch(0.72 0.11 232);
+    --primary-soft: oklch(0.34 0.05 232);
+    --primary-hover: oklch(0.78 0.11 232);
+    --exit-hover: oklch(0.40 0.06 232);
+    --hover: oklch(0.33 0.012 240);
+    --sticker: oklch(0.66 0.19 27);
+    --coral-deep: oklch(0.62 0.19 27);
+    --band-fill: oklch(0.72 0.11 232 / 0.16);
+    --hint-dash: oklch(0.45 0.015 240);
+    --shadow-panel: 0 1px 2px oklch(0 0 0 / 0.30), 0 10px 28px -10px oklch(0 0 0 / 0.55);
+    --shadow-note: 0 0 0 1px oklch(0 0 0 / 0.25), 0 1px 1px oklch(0 0 0 / 0.30), 0 10px 16px -10px oklch(0 0 0 / 0.65);
+    --shadow-note-flat: 0 1px 1px oklch(0 0 0 / 0.30), 0 10px 16px -10px oklch(0 0 0 / 0.6);
+    color-scheme: dark;
+  }
+  :root:not([data-theme="light"]) .card { --note-use: var(--note-dark); --note-edge-use: var(--note-edge-dark); --note-ink-use: var(--note-ink-dark); }
+  :root:not([data-theme="light"]) .zone { --zone-fill-use: var(--zone-fill-dark); --zone-edge-use: var(--zone-edge-dark); }
+  :root:not([data-theme="light"]) .swatch { --swatch-use: var(--swatch-dark); --swatch-edge-use: var(--swatch-edge-dark); }
+  :root:not([data-theme="light"]) .starter-chip { --chip-use: var(--chip-dark); }
+}
+
+:root[data-theme="dark"] {
+  --wall: oklch(0.21 0.012 240);
+  --wall-dot: oklch(0.32 0.015 240);
+  --panel: oklch(0.27 0.012 240);
+  --ink: oklch(0.96 0.004 240);
+  --muted: oklch(0.72 0.012 240);
+  --line: oklch(0.36 0.012 240);
+  --primary: oklch(0.72 0.11 232);
+  --primary-soft: oklch(0.34 0.05 232);
+  --primary-hover: oklch(0.78 0.11 232);
+  --exit-hover: oklch(0.40 0.06 232);
+  --hover: oklch(0.33 0.012 240);
+  --sticker: oklch(0.66 0.19 27);
+  --coral-deep: oklch(0.62 0.19 27);
+  --band-fill: oklch(0.72 0.11 232 / 0.16);
+  --hint-dash: oklch(0.45 0.015 240);
+  --shadow-panel: 0 1px 2px oklch(0 0 0 / 0.30), 0 10px 28px -10px oklch(0 0 0 / 0.55);
+  --shadow-note: 0 0 0 1px oklch(0 0 0 / 0.25), 0 1px 1px oklch(0 0 0 / 0.30), 0 10px 16px -10px oklch(0 0 0 / 0.65);
+  --shadow-note-flat: 0 1px 1px oklch(0 0 0 / 0.30), 0 10px 16px -10px oklch(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+:root[data-theme="dark"] .card { --note-use: var(--note-dark); --note-edge-use: var(--note-edge-dark); --note-ink-use: var(--note-ink-dark); }
+:root[data-theme="dark"] .zone { --zone-fill-use: var(--zone-fill-dark); --zone-edge-use: var(--zone-edge-dark); }
+:root[data-theme="dark"] .swatch { --swatch-use: var(--swatch-dark); --swatch-edge-use: var(--swatch-edge-dark); }
+:root[data-theme="dark"] .starter-chip { --chip-use: var(--chip-dark); }
+
+/* Theme choice inside the board menu. */
+.menu-group { display: flex; flex-direction: column; border-top: 1px solid var(--line); margin-top: 4px; padding-top: 4px; }
+.menu-heading { padding: 4px 12px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.menu-item .check { margin-left: auto; color: var(--primary); }
+.menu-item { display: flex; align-items: center; gap: 8px; }
+

@@ -23,10 +23,10 @@ Scene that drives the design: a facilitator stands by a projector in a lit meeti
 - Empty-board hint, including starter layouts (Retro, Brainstorm, Dot vote).
 - New shortcuts: `Z` new zone, `P` present.
 - Present mode, as specified in section 7.
+- A dark theme, as specified in section 3.1.
 
 ### Out of scope
 
-- A dark theme for the app. The app stays light: projectors wash out dark themes in lit rooms.
 - Any change to the board file format. Files stay `version: 1`, colour names unchanged.
 - Changes to store actions' behaviour other than those listed here.
 
@@ -86,6 +86,24 @@ Fonts are installed from npm (`@fontsource-variable/atkinson-hyperlegible-next`,
 | red | `oklch(0.975 0.02 25)` | `oklch(0.86 0.05 25)` |
 
 Components pass palette colours to CSS through inline custom properties (`--note`, `--note-edge`, `--zone-fill`, `--zone-edge`), never as inline `background` values. This keeps colours in one place and works in jsdom, whose CSS parser may not accept `oklch()` in shorthand properties. Tests assert on the custom property (`el.style.getPropertyValue('--note')`).
+
+### 3.1 Dark theme
+
+Added on 2026-09-16, reversing this spec's original decision to stay light. The original reasoning still holds for a projector in a lit room, so the light theme remains the default for anyone who has not chosen otherwise, and a PNG export is always the light board whatever the app is wearing, because exports get shared and printed.
+
+Three states, chosen from a Theme group at the foot of the board menu and kept in `localStorage` under `card-board.theme`:
+
+| Choice | Root stamp | Result |
+|---|---|---|
+| System (default) | none | `prefers-color-scheme` decides |
+| Light | `data-theme="light"` | light, even on a dark system |
+| Dark | `data-theme="dark"` | dark, even on a light system |
+
+Every dark rule appears twice, once inside `@media (prefers-color-scheme: dark)` guarded by `:root:not([data-theme="light"])` so an explicit light choice still wins, and once under `:root[data-theme="dark"]`. Component rules never change between themes; only token values move.
+
+Note and zone colours come from `src/model/palette.ts` through inline custom properties, which CSS cannot override. So each component supplies both themes' values on the element (`--note` beside `--note-dark`, and so on) and a per-element alias in the stylesheet picks the half that applies. A dark note is a deep version of its hue carrying its own light ink (`--note-ink-dark`), since dark text on a bright note would glare on a dark wall.
+
+Present mode honours whichever theme is in force. A facilitator presenting from a lit room should choose Light.
 
 ## 4. Board surface
 

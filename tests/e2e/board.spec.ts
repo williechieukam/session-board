@@ -170,6 +170,23 @@ test('on a narrow window each starter layout keeps its name on one line', async 
   expect(layout.sideScroll).toBe(false);
 });
 
+test('the board menu switches the whole board to the dark theme', async ({ page }) => {
+  const bodyBackground = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  await createCard(page, 300, 300, 'Readable?');
+  const lightBody = await bodyBackground();
+  const lightNote = await page.getByTestId('card').evaluate((el) => getComputedStyle(el).backgroundColor);
+
+  await page.getByRole('button', { name: 'Board menu' }).click();
+  await page.getByRole('menuitemradio', { name: 'Dark' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  // The wall, the chrome and the note all move, not just the page background.
+  expect(await bodyBackground()).not.toBe(lightBody);
+  expect(await page.getByTestId('card').evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe(lightNote);
+  expect(await page.evaluate(() => localStorage.getItem('card-board.theme'))).toBe('dark');
+  expect(await page.getByRole('menuitemradio', { name: 'Dark' }).getAttribute('aria-checked')).toBe('true');
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();

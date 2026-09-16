@@ -1,6 +1,9 @@
 import type React from 'react';
 import { CARD_COLORS, ZONE_COLORS } from '../model/types';
-import { CARD_PALETTE, ZONE_PALETTE } from '../model/palette';
+import { CARD_PALETTE, ZONE_PALETTE, type Swatch } from '../model/palette';
+
+/** A swatch drawn as one flat colour, edge and fill alike. */
+const solid = (color: string): Swatch => ({ bg: color, border: color });
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { boardToScreen, boundsOf } from './coords';
@@ -19,8 +22,11 @@ export function toolbarPosition(left: number, top: number, bottom: number): { le
   return { left, top: above < TOP_CHROME_CLEARANCE ? bottom + BELOW_GAP : above };
 }
 
-function swatchStyle(fill: string, edge: string): React.CSSProperties {
-  return { '--swatch': fill, '--swatch-edge': edge } as React.CSSProperties;
+function swatchStyle(light: Swatch, dark: Swatch): React.CSSProperties {
+  return {
+    '--swatch': light.bg, '--swatch-edge': light.border,
+    '--swatch-dark': dark.bg, '--swatch-edge-dark': dark.border,
+  } as React.CSSProperties;
 }
 
 export function SelectionToolbar() {
@@ -51,7 +57,7 @@ export function SelectionToolbar() {
             className={'swatch' + (c === shared ? ' is-on' : '')}
             aria-label={`Colour ${c}`}
             aria-pressed={c === shared}
-            style={swatchStyle(CARD_PALETTE[c].bg, CARD_PALETTE[c].border)}
+            style={swatchStyle(CARD_PALETTE[c], CARD_PALETTE[c].dark)}
             onClick={() => st.setCardColor(cardIds, c)}
           />
         ))}
@@ -82,7 +88,7 @@ export function SelectionToolbar() {
             className={'swatch' + (c === z.color ? ' is-on' : '')}
             aria-label={`Zone colour ${c}`}
             aria-pressed={c === z.color}
-            style={swatchStyle(ZONE_PALETTE[c].border, ZONE_PALETTE[c].border)}
+            style={swatchStyle(solid(ZONE_PALETTE[c].border), solid(ZONE_PALETTE[c].dark.border))}
             onClick={() => st.setZoneColor(z.id, c)}
           />
         ))}

@@ -19,6 +19,10 @@ export async function exportBoardPng(content: HTMLElement, board: Board): Promis
   if (!bounds) throw new Error('The board is empty');
   const width = bounds.width + 2 * EXPORT_MARGIN;
   const height = bounds.height + 2 * EXPORT_MARGIN;
+  // A PNG gets shared and printed, so it is always the light board whatever the app is wearing.
+  const root = document.documentElement;
+  const themeBefore = root.getAttribute('data-theme');
+  root.setAttribute('data-theme', 'light');
   content.classList.add('exporting');
   try {
     const dataUrl = await toPng(content, {
@@ -36,5 +40,7 @@ export async function exportBoardPng(content: HTMLElement, board: Board): Promis
     downloadBlob(`${safeFileName(board.name)}.png`, dataUrlToBlob(dataUrl));
   } finally {
     content.classList.remove('exporting');
+    if (themeBefore === null) root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', themeBefore);
   }
 }

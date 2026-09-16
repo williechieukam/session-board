@@ -18,6 +18,10 @@ test('renders text, position, colour and votes', () => {
   expect(el).toHaveStyle({ left: '10px', top: '20px', width: '200px', height: '120px' });
   expect(el.style.getPropertyValue('--note')).toBe(CARD_PALETTE.pink.bg);
   expect(el.style.getPropertyValue('--note-edge')).toBe(CARD_PALETTE.pink.border);
+  // Both themes travel with the note; the stylesheet picks which half applies.
+  expect(el.style.getPropertyValue('--note-dark')).toBe(CARD_PALETTE.pink.dark.bg);
+  expect(el.style.getPropertyValue('--note-edge-dark')).toBe(CARD_PALETTE.pink.dark.border);
+  expect(el.style.getPropertyValue('--note-ink-dark')).toBe(CARD_PALETTE.pink.dark.ink);
   expect(el).toHaveAttribute('data-color', 'pink');
   expect(el.querySelectorAll('.vote-sticker')).toHaveLength(3);
   expect(el.querySelector('.vote-count')).toHaveTextContent('3');

@@ -61,6 +61,9 @@ test('passes palette colours as custom properties', () => {
   const el = screen.getByTestId('zone');
   expect(el.style.getPropertyValue('--zone-fill')).toBe(ZONE_PALETTE.green.bg);
   expect(el.style.getPropertyValue('--zone-edge')).toBe(ZONE_PALETTE.green.border);
+  // Both themes travel with the zone; the stylesheet picks which half applies.
+  expect(el.style.getPropertyValue('--zone-fill-dark')).toBe(ZONE_PALETTE.green.dark.bg);
+  expect(el.style.getPropertyValue('--zone-edge-dark')).toBe(ZONE_PALETTE.green.dark.border);
 });
 
 test('header shows how many notes sit inside the zone', () => {

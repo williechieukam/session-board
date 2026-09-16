@@ -102,6 +102,9 @@ function CardView({ card }: { card: CardModel }) {
         zIndex: card.zIndex,
         '--note': palette.bg,
         '--note-edge': palette.border,
+        '--note-dark': palette.dark.bg,
+        '--note-edge-dark': palette.dark.border,
+        '--note-ink-dark': palette.dark.ink,
       } as React.CSSProperties}
       onPointerDown={onPointerDown}
       onDoubleClick={() => useUiStore.getState().setEditing(card.id)}

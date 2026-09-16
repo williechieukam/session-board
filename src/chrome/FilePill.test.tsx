@@ -66,8 +66,10 @@ test('board menu opens on its first item, moves with arrows, closes with Escape'
   fireEvent.keyDown(menu, { key: 'ArrowDown' });
   expect(document.activeElement).toBe(item('Open file…'));
   fireEvent.keyDown(menu, { key: 'ArrowUp' });
+  expect(document.activeElement).toBe(item('New board'));
+  // Arrows wrap round into the theme choices, which close the menu's list.
   fireEvent.keyDown(menu, { key: 'ArrowUp' });
-  expect(document.activeElement).toBe(item('Export PNG'));
+  expect(document.activeElement).toBe(screen.getAllByRole('menuitemradio')[2]);
   fireEvent.keyDown(menu, { key: 'Escape' });
   expect(screen.queryByRole('menu')).toBeNull();
   expect(document.activeElement).toBe(btn);

@@ -65,6 +65,8 @@ function ZoneView({ zone }: { zone: ZoneModel }) {
         height: resizeRect?.height ?? zone.height,
         '--zone-fill': palette.bg,
         '--zone-edge': palette.border,
+        '--zone-fill-dark': palette.dark.bg,
+        '--zone-edge-dark': palette.dark.border,
       } as React.CSSProperties}
     >
       <div
