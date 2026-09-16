@@ -1,6 +1,6 @@
 import type { ZoneColor } from '../model/types';
 import { useBoardStore } from '../store/boardStore';
-import { viewportCentre } from './actions';
+import { viewportCentre, zoomToFit } from './actions';
 
 export interface LayoutZone { label: string; color: ZoneColor; width: number; height: number }
 export interface Layout { id: string; label: string; zones: LayoutZone[] }
@@ -36,7 +36,10 @@ export const LAYOUTS: Layout[] = [
   },
 ];
 
-/** Drop a layout's zones onto the board, centred on the viewport centre, as one undo step. Returns the new zone ids. */
+/**
+ * Drop a layout's zones onto the board, centred on the viewport centre, as one undo step,
+ * then frame the whole row in view. Returns the new zone ids.
+ */
 export function applyLayout(layout: Layout): string[] {
   const centre = viewportCentre();
   const totalWidth = layout.zones.reduce((sum, z) => sum + z.width, 0) + GAP * (layout.zones.length - 1);
@@ -46,5 +49,9 @@ export function applyLayout(layout: Layout): string[] {
     x += zone.width + GAP;
     return spec;
   });
-  return useBoardStore.getState().addZones(specs);
+  const ids = useBoardStore.getState().addZones(specs);
+  // A retro row is 1880 units wide and runs off both edges of a laptop window at 100 %.
+  // Framing is a viewport change, so it stays outside history and undo remains one step.
+  zoomToFit();
+  return ids;
 }
