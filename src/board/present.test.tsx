@@ -16,6 +16,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   Reflect.deleteProperty(document.documentElement, 'requestFullscreen');
   Reflect.deleteProperty(document, 'exitFullscreen');
   Reflect.deleteProperty(document, 'fullscreenElement');
@@ -119,4 +120,48 @@ test('leaving browser fullscreen ends Present mode', () => {
   document.dispatchEvent(new Event('fullscreenchange'));
   expect(useUiStore.getState().presenting).toBe(false);
   expect(useBoardStore.getState().board.viewport).toEqual({ x: 1, y: 2, zoom: 1 });
+});
+
+/** Fullscreen and window resizes change the board size after the stops were computed. */
+function presentingProbe() {
+  function Probe() { usePresentMode(); return null; }
+  const z1 = createZone({ x: 0, y: 0, width: 400, height: 300 });
+  const z2 = createZone({ x: 600, y: 0, width: 400, height: 300 });
+  useBoardStore.setState((s) => ({ board: { ...s.board, zones: [z1, z2] } }));
+  render(<Probe />);
+}
+
+const enlarge = () => { vi.stubGlobal('innerWidth', 1920); vi.stubGlobal('innerHeight', 1080); };
+const bigStop = (i: number) => presentStops(useBoardStore.getState().board, { width: 1920, height: 1080 })[i];
+
+test('entering fullscreen while presenting refits the current stop to the new board size', () => {
+  presentingProbe();
+  enterPresent();
+  stepPresent(1);
+  expect(useBoardStore.getState().board.viewport).toEqual(presentStops(useBoardStore.getState().board, size)[1]);
+  enlarge();
+  Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => document.documentElement });
+  document.dispatchEvent(new Event('fullscreenchange'));
+  expect(useUiStore.getState().presenting).toBe(true);
+  expect(useUiStore.getState().presentStop).toBe(1);
+  expect(useBoardStore.getState().board.viewport).toEqual(bigStop(1));
+});
+
+test('a window resize while presenting refits the current stop', () => {
+  presentingProbe();
+  enterPresent();
+  enlarge();
+  window.dispatchEvent(new Event('resize'));
+  expect(useBoardStore.getState().board.viewport).toEqual(bigStop(0));
+});
+
+test('neither a resize nor entering fullscreen moves the viewport when not presenting', () => {
+  presentingProbe();
+  useBoardStore.setState((s) => ({ board: { ...s.board, viewport: { x: 3, y: 4, zoom: 1.1 } } }));
+  enlarge();
+  Object.defineProperty(document, 'fullscreenElement', { configurable: true, get: () => document.documentElement });
+  document.dispatchEvent(new Event('fullscreenchange'));
+  window.dispatchEvent(new Event('resize'));
+  expect(useUiStore.getState().presenting).toBe(false);
+  expect(useBoardStore.getState().board.viewport).toEqual({ x: 3, y: 4, zoom: 1.1 });
 });
