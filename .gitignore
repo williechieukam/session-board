@@ -4,3 +4,7 @@ test-results
 playwright-report
 *.tsbuildinfo
 .claude/audit-reports/
+
+# Tool output, regenerated per session
+.impeccable/
+.superpowers/
