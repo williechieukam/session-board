@@ -259,3 +259,33 @@ button, input, textarea { font: inherit; color: inherit; }
 .exit-btn:hover { background: oklch(0.90 0.045 232); }
 @media (max-width: 700px) { .hint-keys { display: none; } }
 @media (prefers-reduced-motion: reduce) { .present-btn, .chrome-hideable, .is-presenting .chrome-hideable { transition: none; } }
+
+/* ===== Follow-up fixes ===== */
+
+/* Each chrome panel is its own stacking context at --z-chrome, so a popover inside one
+   cannot rise above the selection toolbar by itself. Lift the whole panel while it is open. */
+.file-pill:has(.menu) { z-index: var(--z-popover); }
+.session-bar:has(.timer-popover) { z-index: var(--z-popover); }
+
+/* The timer pill clips its progress bar with overflow: hidden, so the play/pause tooltip
+   sits outside the pill and is positioned against the wrapper instead. */
+.t-btn-tip { position: absolute; right: 8px; top: calc(100% + 10px); bottom: auto; left: auto; transform: none; }
+.timer-wrap:has(.t-btn:hover) .t-btn-tip,
+.timer-wrap:has(.t-btn:focus-visible) .t-btn-tip { opacity: 1; visibility: visible; transition-delay: 400ms, 400ms; }
+
+/* Key hints wrap as whole hints on a narrow window, never inside one hint. */
+.keys { flex-wrap: wrap; justify-content: center; }
+.keys span { white-space: nowrap; }
+
+/* Read by screen readers, never drawn. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* `.is-presenting .present-btn` outranks the `.present-btn` override above, so its 200 ms
+     display delay survived reduced motion and left an empty box in the session bar. */
+  .is-presenting .present-btn { transition: none; }
+  .t-btn-tip { transition: none; }
+}

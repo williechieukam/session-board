@@ -51,13 +51,14 @@ export function BoardMenu() {
       <button
         ref={buttonRef}
         type="button"
-        className="icon-btn menu-btn"
+        className="icon-btn menu-btn tip-below"
         aria-label="Board menu"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
         <ChevronDownIcon />
+        <span className="tip" aria-hidden="true">Board menu</span>
       </button>
       {open && (
         <div ref={menuRef} className="panel menu" role="menu" aria-label="Board menu" onKeyDown={onMenuKeyDown}>

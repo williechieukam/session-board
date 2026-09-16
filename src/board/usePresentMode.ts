@@ -10,7 +10,21 @@ import { exitPresent, stepPresent } from './present';
  */
 export function usePresentMode(): void {
   useEffect(() => {
-    const refit = () => { if (useUiStore.getState().presenting) stepPresent(0); };
+    // Dragging a window edge fires resize far faster than the board can refit, so coalesce
+    // every burst into one refit per frame. Without this the view judders until the drag ends.
+    let frame = 0;
+    // Gate on a flag set before scheduling, not on the frame id: the id is only assigned
+    // after requestAnimationFrame returns, which is too late to gate a burst.
+    let pending = false;
+    const refit = () => {
+      if (!useUiStore.getState().presenting || pending) return;
+      pending = true;
+      frame = requestAnimationFrame(() => {
+        pending = false;
+        frame = 0;
+        if (useUiStore.getState().presenting) stepPresent(0);
+      });
+    };
     const onChange = () => {
       if (!useUiStore.getState().presenting) return;
       if (document.fullscreenElement) refit();
@@ -19,6 +33,7 @@ export function usePresentMode(): void {
     document.addEventListener('fullscreenchange', onChange);
     window.addEventListener('resize', refit);
     return () => {
+      if (frame !== 0) cancelAnimationFrame(frame);
       document.removeEventListener('fullscreenchange', onChange);
       window.removeEventListener('resize', refit);
     };

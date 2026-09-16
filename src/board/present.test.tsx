@@ -10,6 +10,10 @@ const size = { width: 1024, height: 768 };
 
 beforeEach(() => {
   vi.useFakeTimers();
+  // Refits are coalesced into one animation frame; run that frame straight away so these
+  // tests stay about what a refit does. The coalescing itself is covered in usePresentMode.test.tsx.
+  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => { cb(0); return 1; });
+  vi.stubGlobal('cancelAnimationFrame', () => {});
   useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false });
   useUiStore.setState({ editingId: null, presenting: false, presentStop: 0, presentReturn: null, animateViewport: false });
 });

@@ -86,6 +86,21 @@ test('the settings toggle has a stable accessible name, and the display is a liv
   fireEvent.click(screen.getByText('Start'));
   expect(screen.getByRole('button', { name: 'Timer settings' })).toBeInTheDocument();
   expect(screen.getByRole('timer')).toHaveTextContent('05:00');
+  // A button's label replaces its contents, so a timer role inside it is never announced.
+  expect(screen.getByRole('button', { name: 'Timer settings' }).querySelector('[role="timer"]')).toBeNull();
+});
+
+test('the play and pause control has a tooltip outside the clipped pill', () => {
+  render(<Timer />);
+  openSettings();
+  fireEvent.click(screen.getByText('5 min'));
+  fireEvent.click(screen.getByText('Start'));
+  const tip = screen.getByText('Pause timer', { selector: '.t-btn-tip' });
+  expect(tip).toHaveAttribute('aria-hidden', 'true');
+  // The pill clips its progress bar with overflow: hidden, so the tooltip must not live inside it.
+  expect(pill().contains(tip)).toBe(false);
+  fireEvent.click(screen.getByLabelText('Pause timer'));
+  expect(screen.getByText('Start timer', { selector: '.t-btn-tip' })).toBeInTheDocument();
 });
 
 test('Escape and a pointerdown outside close the settings', () => {

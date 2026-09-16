@@ -90,11 +90,16 @@ export function Timer() {
           ) : (
             <>
               {label && <span className="t-label">{label}</span>}
-              <span className="t-time" role="timer" data-testid="timer-display">{formatTime(remaining)}</span>
+              <span className="t-time" data-testid="timer-display">{formatTime(remaining)}</span>
               {state === 'done' && <span className="t-done">Time’s up</span>}
             </>
           )}
         </button>
+        {state !== 'idle' && (
+          // Outside the settings button: a button's label replaces its contents, so a timer
+          // role in there is never announced.
+          <span className="sr-only" role="timer">{`${formatTime(remaining)} remaining`}</span>
+        )}
         {(state === 'running' || state === 'paused') && (
           <button type="button" className="t-btn" aria-label={running ? 'Pause timer' : 'Start timer'} onClick={running ? pause : start}>
             {running ? <PauseIcon /> : <PlayIcon />}
@@ -104,6 +109,9 @@ export function Timer() {
           <span className="t-bar" style={{ width: `${(remaining / total) * 100}%` }} aria-hidden="true" />
         )}
       </div>
+      {(state === 'running' || state === 'paused') && (
+        <span className="tip t-btn-tip" aria-hidden="true">{running ? 'Pause timer' : 'Start timer'}</span>
+      )}
       {open && (
         <div ref={popoverRef} tabIndex={-1} className="panel timer-popover" role="dialog" aria-label="Timer settings" onKeyDown={onPopoverKeyDown}>
           <label className="field">

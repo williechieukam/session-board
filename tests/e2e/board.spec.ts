@@ -99,6 +99,31 @@ test('starter layout button creates the retro zones', async ({ page }) => {
   await expect(page.locator('.zone-label')).toHaveText(['Went well', 'To improve', 'Actions']);
 });
 
+test('an open board menu covers the selection toolbar it overlaps', async ({ page }) => {
+  await createCard(page, 150, 90, 'Under the menu');
+  const o = await boardOrigin(page);
+  await page.mouse.click(o.x + 150, o.y + 90);
+  await expect(page.getByTestId('selection-toolbar')).toBeVisible();
+  await page.getByRole('button', { name: 'Board menu' }).click();
+  const menu = page.getByRole('menu', { name: 'Board menu' });
+  const menuBox = (await menu.boundingBox())!;
+  const toolbarBox = (await page.getByTestId('selection-toolbar').boundingBox())!;
+  // The two must genuinely overlap, or the check below proves nothing.
+  const overlap = {
+    left: Math.max(menuBox.x, toolbarBox.x),
+    right: Math.min(menuBox.x + menuBox.width, toolbarBox.x + toolbarBox.width),
+    top: Math.max(menuBox.y, toolbarBox.y),
+    bottom: Math.min(menuBox.y + menuBox.height, toolbarBox.y + toolbarBox.height),
+  };
+  expect(overlap.right).toBeGreaterThan(overlap.left);
+  expect(overlap.bottom).toBeGreaterThan(overlap.top);
+  const hit = await page.evaluate(([x, y]) => {
+    const el = document.elementFromPoint(x as number, y as number);
+    return el?.closest('[role="menu"]') ? 'menu' : el?.closest('.selection-toolbar') ? 'toolbar' : 'other';
+  }, [(overlap.left + overlap.right) / 2, (overlap.top + overlap.bottom) / 2]);
+  expect(hit).toBe('menu');
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();
