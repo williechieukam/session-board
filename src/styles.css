@@ -289,3 +289,7 @@ button, input, textarea { font: inherit; color: inherit; }
   .is-presenting .present-btn { transition: none; }
   .t-btn-tip { transition: none; }
 }
+
+/* Starter buttons keep their label on one line and wrap as whole buttons instead. */
+.starter-row { flex-wrap: wrap; justify-content: center; }
+.starter-btn { white-space: nowrap; }
