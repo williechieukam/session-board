@@ -1,6 +1,10 @@
 /**
  * Register the offline worker.
  *
+ * The URL is built from BASE_URL rather than written as '/sw.js': on GitHub Pages the app
+ * lives under a project subpath, and a worker registered at the origin root would both fail
+ * to fetch and, if it did, claim a scope the app does not occupy.
+ *
  * Production only: in development the worker would serve stale modules and fight hot reload.
  * Registration failures are swallowed, since working offline is a bonus and never a
  * precondition for using the board.
@@ -12,6 +16,6 @@ export function registerServiceWorker(isProduction: boolean = import.meta.env.PR
   // navigator that has since been replaced.
   const container = navigator.serviceWorker;
   window.addEventListener('load', () => {
-    void container.register('/sw.js').catch(() => { /* offline support is optional */ });
+    void container.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => { /* offline support is optional */ });
   }, { once: true });
 }

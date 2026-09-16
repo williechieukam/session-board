@@ -214,9 +214,15 @@ test('the page carries the metadata a shared link needs', async ({ page }) => {
   expect(await content('meta[property="og:description"]')).toContain('workshop');
   expect(await content('meta[name="twitter:card"]')).toBe('summary_large_image');
 
-  // The commonest way a share card breaks is an og:image that 404s, so resolve it.
+  // An unfurler ignores a relative og:image, so it has to be absolute...
   const src = (await content('meta[property="og:image"]'))!;
-  const res = await page.request.get(src);
+  expect(src).toMatch(/^https:\/\//);
+  expect(await content('meta[property="og:url"]')).toMatch(/^https:\/\//);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /^https:\/\//);
+
+  // ...and the file it names has to exist. Fetching the absolute URL would test the deployed
+  // site rather than this build, so resolve the same filename against the server under test.
+  const res = await page.request.get(`/${src.split('/').pop()}`);
   expect(res.status()).toBe(200);
   expect(res.headers()['content-type']).toContain('image');
 

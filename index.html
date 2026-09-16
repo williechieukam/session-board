@@ -13,14 +13,17 @@
     <meta name="description" content="A sticky-note board for running a workshop from one screen." />
 
     <!--
-      Share card. og:image is relative because this app has no canonical origin yet; most
-      platforms need it absolute, so it becomes https://<host>/og-image.png on the day there
-      is a host, alongside the canonical link that is deliberately absent for the same reason.
+      Share card. og:image and canonical are absolute against the Pages origin: Slack,
+      Facebook and most other unfurlers ignore a relative og:image, so the card silently
+      failed to render while this was a path. They stay absolute regardless of where the app
+      is being served from, which is what canonical means.
     -->
+    <link rel="canonical" href="https://williechieukam.github.io/session-board/" />
+    <meta property="og:url" content="https://williechieukam.github.io/session-board/" />
     <meta property="og:title" content="Sessionboard" />
     <meta property="og:description" content="A sticky-note board for running a workshop from one screen." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:image" content="https://williechieukam.github.io/session-board/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />

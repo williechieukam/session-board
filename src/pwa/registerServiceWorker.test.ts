@@ -18,7 +18,7 @@ test('production registers the worker, but only once the page has loaded', () =>
   // Registering during startup competes with the first render for bandwidth.
   expect(register).not.toHaveBeenCalled();
   window.dispatchEvent(new Event('load'));
-  expect(register).toHaveBeenCalledWith('/sw.js');
+  expect(register).toHaveBeenCalledWith(`${import.meta.env.BASE_URL}sw.js`);
 });
 
 test('a browser without service workers is left alone', () => {
@@ -41,8 +41,10 @@ test('a refused registration never reaches the user', async () => {
 test('the manifest declares what an installable app needs', () => {
   const manifest = JSON.parse(readFileSync('public/manifest.webmanifest', 'utf8'));
   expect(manifest.name).toBe('Sessionboard');
-  expect(manifest.start_url).toBe('/');
-  expect(manifest.scope).toBe('/');
+  // Relative, so the same manifest works at the origin root and under a project subpath.
+  expect(manifest.start_url).toBe('./');
+  expect(manifest.scope).toBe('./');
+  expect(manifest.icons.every((i: { src: string }) => i.src.startsWith('./'))).toBe(true);
   expect(manifest.display).toBe('standalone');
   expect(manifest.theme_color).toMatch(/^#[0-9a-f]{6}$/);
   expect(manifest.background_color).toMatch(/^#[0-9a-f]{6}$/);
@@ -54,9 +56,12 @@ test('the manifest declares what an installable app needs', () => {
 
 test('the worker caches the shell and leaves other origins alone', () => {
   const sw = readFileSync('public/sw.js', 'utf8');
-  expect(sw).toContain("'/'");
-  expect(sw).toContain('/favicon.svg');
-  expect(sw).toContain('/manifest.webmanifest');
+  // Shell paths come from the worker's own scope, so one file serves both deployments.
+  expect(sw).toContain('self.registration.scope');
+  expect(sw).toContain('${BASE}favicon.svg');
+  expect(sw).toContain('${BASE}manifest.webmanifest');
+  // The offline navigation fallback must use that base too, or it never matches.
+  expect(sw).toContain('caches.match(BASE)');
   // Navigations must try the network first, or a new build would never be picked up.
   expect(sw).toContain("request.mode === 'navigate'");
   expect(sw).toContain('self.location.origin');
