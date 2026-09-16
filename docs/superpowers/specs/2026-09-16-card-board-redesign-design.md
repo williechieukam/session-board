@@ -54,6 +54,8 @@ Scene that drives the design: a facilitator stands by a projector in a lit meeti
 | `--font-ui` | `'Atkinson Hyperlegible Next Variable', system-ui, -apple-system, 'Segoe UI', sans-serif` | Everything |
 | `--font-mono` | `'Atkinson Hyperlegible Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace` | Timer digits, counts, zoom percentage, key hints |
 
+Progress indicators are exempt from `--ease-out`: the timer's progress bar (`.t-bar`) transitions its width with `linear`, because it interpolates between 250 ms samples of elapsed time and any easing makes it lurch.
+
 Z-index scale: `--z-chrome: 100`, `--z-selection-toolbar: 150`, `--z-popover: 200`, `--z-toast: 300`. No other z-index literals except note `zIndex` inside `.board-content`.
 
 Fonts are installed from npm (`@fontsource-variable/atkinson-hyperlegible-next`, `@fontsource-variable/atkinson-hyperlegible-mono`, both 5.3.0) and imported in `src/main.tsx`, so the app works offline in a meeting room. PNG export keeps working because html-to-image inlines same-origin `@font-face` rules.
@@ -187,6 +189,8 @@ The 2.3 cap comes from the legibility target: 20 px note text at 2.3 × is 46 px
 ### Exiting
 
 From Escape, the Exit button, or the browser leaving fullscreen (a `fullscreenchange` event with no `document.fullscreenElement` while presenting): set `presenting = false`, animate the viewport back to the return viewport, clear the return viewport, and call `document.exitFullscreen()` only if the document is still fullscreen.
+
+In fullscreen the browser consumes Escape itself to leave fullscreen, so pressing Escape while editing a note also ends the presentation: the browser drops out of fullscreen, which fires `fullscreenchange` with no `document.fullscreenElement` and exits Present mode. Clicking elsewhere commits an edit without leaving Present mode, so that is the way to finish an edit mid-presentation.
 
 ### Viewport animation
 
