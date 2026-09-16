@@ -124,6 +124,28 @@ test('an open board menu covers the selection toolbar it overlaps', async ({ pag
   expect(hit).toBe('menu');
 });
 
+test('an open timer panel covers the selection toolbar it overlaps', async ({ page }) => {
+  await createCard(page, 1050, 150, 'Under the panel');
+  const o = await boardOrigin(page);
+  await page.mouse.click(o.x + 1050, o.y + 150);
+  await expect(page.getByTestId('selection-toolbar')).toBeVisible();
+  await page.getByRole('button', { name: 'Timer settings' }).click();
+  await expect(page.getByRole('dialog', { name: 'Timer settings' })).toBeVisible();
+  const hit = await page.evaluate(() => {
+    const panel = document.querySelector('.timer-popover')!.getBoundingClientRect();
+    const bar = document.querySelector('.selection-toolbar')!.getBoundingClientRect();
+    const box = {
+      left: Math.max(panel.left, bar.left), right: Math.min(panel.right, bar.right),
+      top: Math.max(panel.top, bar.top), bottom: Math.min(panel.bottom, bar.bottom),
+    };
+    // Without a real overlap the hit test below would prove nothing.
+    if (box.right <= box.left || box.bottom <= box.top) return 'no overlap';
+    const el = document.elementFromPoint((box.left + box.right) / 2, (box.top + box.bottom) / 2);
+    return el?.closest('.timer-popover') ? 'panel' : el?.closest('.selection-toolbar') ? 'toolbar' : 'other';
+  });
+  expect(hit).toBe('panel');
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();

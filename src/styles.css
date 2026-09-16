@@ -287,7 +287,6 @@ button, input, textarea { font: inherit; color: inherit; }
   /* `.is-presenting .present-btn` outranks the `.present-btn` override above, so its 200 ms
      display delay survived reduced motion and left an empty box in the session bar. */
   .is-presenting .present-btn { transition: none; }
-  .t-btn-tip { transition: none; }
 }
 
 /* Starter buttons keep their label on one line and wrap as whole buttons instead. */

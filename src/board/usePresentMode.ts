@@ -21,7 +21,6 @@ export function usePresentMode(): void {
       pending = true;
       frame = requestAnimationFrame(() => {
         pending = false;
-        frame = 0;
         if (useUiStore.getState().presenting) stepPresent(0);
       });
     };
@@ -33,7 +32,8 @@ export function usePresentMode(): void {
     document.addEventListener('fullscreenchange', onChange);
     window.addEventListener('resize', refit);
     return () => {
-      if (frame !== 0) cancelAnimationFrame(frame);
+      // `pending` is the single source of truth: a frame id can outlive its callback.
+      if (pending) cancelAnimationFrame(frame);
       document.removeEventListener('fullscreenchange', onChange);
       window.removeEventListener('resize', refit);
     };
