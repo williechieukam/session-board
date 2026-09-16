@@ -1,4 +1,4 @@
-import { THEME_KEY, applyTheme, readThemeChoice, resolvedTheme, startTheme, useThemeStore } from './theme';
+import { THEME_KEY, applyTheme, readThemeChoice, startTheme, useThemeStore } from './theme';
 
 beforeEach(() => {
   localStorage.clear();
@@ -43,16 +43,6 @@ test('a choice still holds for the session when storage refuses to write', () =>
   expect(() => useThemeStore.getState().setChoice('light')).not.toThrow();
   expect(useThemeStore.getState().choice).toBe('light');
   expect(document.documentElement.getAttribute('data-theme')).toBe('light');
-});
-
-test('system resolves through the operating system preference', () => {
-  vi.stubGlobal('matchMedia', (q: string) => ({ matches: q.includes('dark') }));
-  expect(resolvedTheme('system')).toBe('dark');
-  vi.stubGlobal('matchMedia', () => ({ matches: false }));
-  expect(resolvedTheme('system')).toBe('light');
-  // An explicit choice never consults the system.
-  expect(resolvedTheme('dark')).toBe('dark');
-  expect(resolvedTheme('light')).toBe('light');
 });
 
 test('startTheme stamps the stored choice', () => {

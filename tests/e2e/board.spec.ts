@@ -185,6 +185,13 @@ test('the board menu switches the whole board to the dark theme', async ({ page 
   expect(await page.getByTestId('card').evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe(lightNote);
   expect(await page.evaluate(() => localStorage.getItem('card-board.theme'))).toBe('dark');
   expect(await page.getByRole('menuitemradio', { name: 'Dark' }).getAttribute('aria-checked')).toBe('true');
+
+  await page.keyboard.press('Escape');
+  const noteInk = await page.getByTestId('card').evaluate((el) => getComputedStyle(el).color);
+  await page.getByTestId('card').dblclick();
+  // Editing a note keeps the note's own ink; the text must not change colour as you type.
+  const editorInk = await page.locator('textarea.card-editor').evaluate((el) => getComputedStyle(el).color);
+  expect(editorInk).toBe(noteInk);
 });
 
 test('export produces a PNG download', async ({ page }) => {

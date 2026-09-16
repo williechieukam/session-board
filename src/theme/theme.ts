@@ -30,12 +30,6 @@ export function applyTheme(choice: ThemeChoice): void {
   else root.setAttribute('data-theme', choice);
 }
 
-/** Which theme the choice actually resolves to right now. */
-export function resolvedTheme(choice: ThemeChoice): 'light' | 'dark' {
-  if (choice !== 'system') return choice;
-  return typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
 interface ThemeState {
   choice: ThemeChoice;
   setChoice(choice: ThemeChoice): void;

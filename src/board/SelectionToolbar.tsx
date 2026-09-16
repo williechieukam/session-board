@@ -1,9 +1,6 @@
 import type React from 'react';
 import { CARD_COLORS, ZONE_COLORS } from '../model/types';
 import { CARD_PALETTE, ZONE_PALETTE, type Swatch } from '../model/palette';
-
-/** A swatch drawn as one flat colour, edge and fill alike. */
-const solid = (color: string): Swatch => ({ bg: color, border: color });
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { boardToScreen, boundsOf } from './coords';
@@ -15,6 +12,9 @@ export const TOOLBAR_GAP = 52;
 /** A toolbar top above this line would sit under the top chrome, so it flips below the selection. */
 export const TOP_CHROME_CLEARANCE = 76;
 const BELOW_GAP = 12;
+
+/** A swatch drawn as one flat colour, edge and fill alike. */
+const solid = (color: string): Swatch => ({ bg: color, border: color });
 
 /** Screen position of the toolbar for a selection whose screen-space box spans `top` to `bottom`. */
 export function toolbarPosition(left: number, top: number, bottom: number): { left: number; top: number } {
