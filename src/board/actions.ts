@@ -59,10 +59,14 @@ export function zoomReset(): void {
   st.setViewport(zoomAround(st.board.viewport, 1 / st.board.viewport.zoom, containerCentre()));
 }
 
-/** Fit every card and zone into the board with a 64 px margin, never zooming past 100 %. Does nothing on an empty board. */
+/**
+ * Fit every card and zone into the board with a 64 px margin, never zooming past 100 %.
+ * The bottom margin is 76 px: the tool dock sits 16 px off the bottom and is 52 px tall,
+ * so a 64 px margin tucked the board under it. Does nothing on an empty board.
+ */
 export function zoomToFit(): void {
   const st = useBoardStore.getState();
   const bounds = boundsOf([...st.board.cards, ...st.board.zones]);
   if (!bounds) return;
-  st.setViewport(fitViewport(bounds, boardSize(), { top: 64, right: 64, bottom: 64, left: 64 }, 1));
+  st.setViewport(fitViewport(bounds, boardSize(), { top: 64, right: 64, bottom: 76, left: 64 }, 1));
 }

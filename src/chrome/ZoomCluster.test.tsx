@@ -28,8 +28,10 @@ test('zoom to fit frames every item without passing 100 %', () => {
   useBoardStore.setState((s) => ({ board: { ...s.board, cards: [a, b] } }));
   fireEvent.click(screen.getByLabelText('Zoom to fit'));
   // No board element is mounted, so the size falls back to the jsdom window (1024 x 768);
-  // inside 64 px margins that leaves 896 x 640.
-  expect(st().board.viewport.zoom).toBeCloseTo(Math.min(896 / 3200, 640 / 1120));
+  // inside 64 px margins, and 76 px at the bottom to clear the tool dock, that leaves 896 x 628.
+  expect(st().board.viewport.zoom).toBeCloseTo(Math.min(896 / 3200, 628 / 1120));
+  // Centred inside those margins: vertically between 64 and 768 - 76, so the dock never covers the board.
+  expect(st().board.viewport.y).toBeCloseTo((64 + (768 - 76)) / 2 - 560 * st().board.viewport.zoom);
   const small = createCard({ x: 0, y: 0 }, 3);
   useBoardStore.setState((s) => ({ board: { ...s.board, cards: [small] } }));
   fireEvent.click(screen.getByLabelText('Zoom to fit'));
