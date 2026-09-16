@@ -26,7 +26,7 @@ export function FilePill() {
   };
 
   return (
-    <div className="panel file-pill chrome-hideable">
+    <header className="panel file-pill chrome-hideable">
       <span className="app-mark" aria-hidden="true" />
       <input
         className="board-name"
@@ -46,6 +46,6 @@ export function FilePill() {
         {dirty && <span className="dirty-dot" aria-hidden="true" />}
         Save file
       </button>
-    </div>
+    </header>
   );
 }

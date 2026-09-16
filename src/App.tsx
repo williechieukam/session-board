@@ -14,6 +14,7 @@ import { useUiStore } from './store/uiStore';
 export function App() {
   usePresentMode();
   const presenting = useUiStore((s) => s.presenting);
+  const boardName = useBoardStore((s) => s.board.name);
   useEffect(() => {
     const backup = readBackup();
     if (backup) useBoardStore.getState().loadBoard(backup);
@@ -30,6 +31,8 @@ export function App() {
 
   return (
     <div className={'app' + (presenting ? ' is-presenting' : '')}>
+      {/* The board's name is the page's heading. Drawn in the file pill, so it is hidden here. */}
+      <h1 className="sr-only">{boardName}</h1>
       <Board />
       <FilePill />
       <SessionBar />

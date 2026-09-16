@@ -49,7 +49,7 @@ export function SelectionToolbar() {
   if (cards.length > 0) {
     const shared = cards.every((c) => c.color === cards[0].color) ? cards[0].color : null;
     return (
-      <div className="panel selection-toolbar no-export" data-testid="selection-toolbar" style={style} onPointerDown={stop}>
+      <div className="panel selection-toolbar no-export" data-testid="selection-toolbar" role="toolbar" aria-label="Selection" style={style} onPointerDown={stop}>
         {CARD_COLORS.map((c) => (
           <button
             key={c}
@@ -80,7 +80,7 @@ export function SelectionToolbar() {
   if (zones.length === 1) {
     const z = zones[0];
     return (
-      <div className="panel selection-toolbar no-export" data-testid="selection-toolbar" style={style} onPointerDown={stop}>
+      <div className="panel selection-toolbar no-export" data-testid="selection-toolbar" role="toolbar" aria-label="Selection" style={style} onPointerDown={stop}>
         {ZONE_COLORS.map((c) => (
           <button
             key={c}

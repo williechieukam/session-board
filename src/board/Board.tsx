@@ -16,7 +16,7 @@ import { isTextTarget, useKeyboardShortcuts } from './useKeyboardShortcuts';
 
 export function Board() {
   useKeyboardShortcuts();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLElement>(null);
   const cards = useBoardStore((s) => s.board.cards);
   const zones = useBoardStore((s) => s.board.zones);
   const vp = useBoardStore((s) => s.board.viewport);
@@ -142,7 +142,7 @@ export function Board() {
   };
 
   return (
-    <div
+    <main
       ref={containerRef}
       className={'board' + (spaceHeld ? ' panning' : '')}
       data-testid="board"
@@ -160,6 +160,6 @@ export function Board() {
       <EmptyHint />
       {band && <SelectionBox rect={band} />}
       <SelectionToolbar />
-    </div>
+    </main>
   );
 }

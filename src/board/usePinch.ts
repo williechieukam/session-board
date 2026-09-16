@@ -7,7 +7,7 @@ import { DRAG_CANCEL_EVENT } from './useDrag';
 
 interface PinchStart { dist: number; mid: Point; vp: Viewport }
 
-export function usePinch(containerRef: React.RefObject<HTMLDivElement | null>) {
+export function usePinch(containerRef: React.RefObject<HTMLElement | null>) {
   const touches = useRef(new Map<number, Point>());
   const start = useRef<PinchStart | null>(null);
 

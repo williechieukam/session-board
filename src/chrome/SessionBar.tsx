@@ -5,7 +5,7 @@ import { ScreenIcon } from './icons';
 /** Top-right session instruments: the timer and the Present button. */
 export function SessionBar() {
   return (
-    <div className="session-bar">
+    <div className="session-bar" role="toolbar" aria-label="Session">
       <Timer />
       <button type="button" className="present-btn chrome-hideable tip-below" onClick={enterPresent}>
         <ScreenIcon />

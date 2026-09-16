@@ -194,6 +194,19 @@ test('the board menu switches the whole board to the dark theme', async ({ page 
   expect(editorInk).toBe(noteInk);
 });
 
+test('the page exposes landmarks, a heading and named toolbars', async ({ page }) => {
+  await expect(page.getByRole('main')).toHaveAttribute('data-testid', 'board');
+  await expect(page.getByRole('banner')).toContainText('Save file');
+  // The heading carries the board name for screen readers without drawing it twice.
+  const heading = page.getByRole('heading', { level: 1 });
+  await expect(heading).toHaveText('Untitled board');
+  // Clipped to a pixel rather than hidden, so assistive technology still reads it.
+  expect(await heading.evaluate((el) => Math.round(el.getBoundingClientRect().width))).toBeLessThanOrEqual(1);
+  for (const name of ['Tools', 'Zoom', 'Session']) {
+    await expect(page.getByRole('toolbar', { name })).toBeAttached();
+  }
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();

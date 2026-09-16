@@ -26,6 +26,22 @@ test('renders the floating chrome around the board', () => {
   expect(screen.queryByLabelText('Load')).toBeNull();                 // the old toolbar is gone
 });
 
+test('the page offers a structure to navigate', () => {
+  render(<App />);
+  // The canvas is the main content; the file pill is the banner.
+  expect(screen.getByRole('main')).toBe(screen.getByTestId('board'));
+  expect(screen.getByRole('banner')).toContainElement(screen.getByLabelText('Board name'));
+
+  // The board's name is the page heading, read by screen readers but drawn in the pill.
+  const heading = screen.getByRole('heading', { level: 1 });
+  expect(heading).toHaveTextContent(useBoardStore.getState().board.name);
+  expect(heading).toHaveClass('sr-only');
+
+  for (const name of ['Tools', 'Zoom', 'Session']) {
+    expect(screen.getByRole('toolbar', { name })).toBeInTheDocument();
+  }
+});
+
 test('presenting hides the chrome and shows the present hint', () => {
   const { container } = render(<App />);
   act(() => { useBoardStore.getState().addZone({ x: 0, y: 0 }); });

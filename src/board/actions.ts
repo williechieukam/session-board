@@ -4,7 +4,7 @@ import { useUiStore } from '../store/uiStore';
 import { boundsOf, fitViewport, screenToBoard, zoomAround, type Point } from './coords';
 
 /** The mounted board container; Board.tsx sets this in an effect. */
-export const boardContainer: { el: HTMLDivElement | null } = { el: null };
+export const boardContainer: { el: HTMLElement | null } = { el: null };
 
 /** Board-space point for a client (viewport) position, relative to the container. */
 export function clientToBoard(container: HTMLElement, clientX: number, clientY: number, vp: Viewport): Point {
