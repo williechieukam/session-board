@@ -229,6 +229,12 @@ button, input, textarea { font: inherit; color: inherit; }
 .present-btn:hover .tip, .present-btn:focus-visible .tip { opacity: 1; visibility: visible; transition-delay: 400ms, 400ms; }
 .chrome-hideable { transition: opacity 200ms var(--ease-out), visibility 0s linear 0s; }
 .is-presenting .chrome-hideable { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 200ms var(--ease-out), visibility 0s linear 200ms; }
+/* Collapse the Present button's box once it has faded, so the enlarged timer sits flush against the 16 px right margin. */
+.is-presenting .present-btn {
+  display: none;
+  transition: opacity 200ms var(--ease-out), visibility 0s linear 200ms, display 0s linear 200ms;
+  transition-behavior: allow-discrete;
+}
 .is-presenting .timer { height: 64px; padding: 0 10px 0 22px; gap: 14px; }
 .is-presenting .timer-main { gap: 14px; }
 .is-presenting .t-time { font-size: 38px; }
