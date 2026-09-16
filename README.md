@@ -7,6 +7,8 @@ shared screen. Present mode turns the board into the deck, so the notes you
 just wrote are the slides you walk through. There is no account, no server and
 no sign-in: the board lives in your browser and saves to a file you own.
 
+Open it at <https://williechieukam.github.io/session-board/>. Nothing to install.
+
 ![The empty board, light theme](docs/images/board-light.png)
 
 ![A retro in progress, dark theme](docs/images/board-dark.png)
