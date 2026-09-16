@@ -1,7 +1,7 @@
 # Card Board Redesign and Present Mode — Design Spec
 
 Date: 2026-09-16
-Status: Approved for planning (visual direction approved by the user from the proposal artifact; Present mode approved; starter layouts excluded)
+Status: Approved for planning (visual direction approved by the user from the proposal artifact; Present mode approved; starter layouts added)
 Visual reference: https://claude.ai/artifact/3EaEJPyfaqNf9wEys4mfqH
 Builds on: `docs/superpowers/specs/2026-09-15-card-board-design.md` (all behaviour there still holds unless this spec changes it)
 
@@ -20,13 +20,12 @@ Scene that drives the design: a facilitator stands by a projector in a lit meeti
 - Board menu inside the file pill holding New board, Open file… and Export PNG. Save stays a visible button.
 - Timer redesign: an always-visible pill with a settings popover and an optional exercise name.
 - Zoom to fit.
-- Empty-board hint (without starter layouts).
+- Empty-board hint, including starter layouts (Retro, Brainstorm, Dot vote).
 - New shortcuts: `Z` new zone, `P` present.
 - Present mode, as specified in section 7.
 
 ### Out of scope
 
-- Starter layouts (Retro, Brainstorm, Dot vote).
 - A dark theme for the app. The app stays light: projectors wash out dark themes in lit rooms.
 - Any change to the board file format. Files stay `version: 1`, colour names unchanged.
 - Changes to store actions' behaviour other than those listed here.
@@ -99,6 +98,13 @@ Components pass palette colours to CSS through inline custom properties (`--note
 - Selected zone: outline 2 px `--primary`, offset 2 px; same resize handle as notes.
 - Rubber band: 1 px `--primary` border, `oklch(0.44 0.10 232 / 0.10)` fill.
 - Empty-board hint (`data-testid=empty-hint`): centred in the board when there are no cards and no zones and the board is not presenting. A 240 × 160 dashed outline (2 px `oklch(0.72 0.02 240)`) containing "Double-click anywhere to add a note" (19 px weight 700), and below it the key hints `N` note, `Z` zone, `Space` drag to pan, each key as a small keycap. `pointer-events: none`, so double-click passes through to the board.
+- Starter layouts: below the key hints, the hint shows "Or start from a layout" and one button per entry in `LAYOUTS` (`src/board/layouts.ts`), labelled with the layout's name and no `aria-label`. Each button shows a small chip row, one chip per zone, filled from `ZONE_PALETTE[zone.color].border` through an inline custom property. This row needs its own `pointer-events: auto` since the hint container is `pointer-events: none`. Clicking a button drops that layout's zones onto the board, centred on the current viewport centre, as a single undo step (`addZones`, `src/store/boardStore.ts`); it selects nothing and starts no editing. The three layouts, laid out left to right in one row with 40-unit gaps between zones:
+
+  | Layout (`id`) | Zones (label — colour — size) |
+  |---|---|
+  | Retro (`retro`) | Went well — green — 600×400; To improve — neutral — 600×400; Actions — blue — 600×400 |
+  | Brainstorm (`brainstorm`) | Ideas — neutral — 1240×420; Parking lot — neutral — 360×420 |
+  | Dot vote (`dot-vote`) | Options — neutral — 800×420; Top three — green — 400×420 |
 
 ## 5. Chrome
 
@@ -213,7 +219,7 @@ Unchanged: Delete/Backspace, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl/Cmd+Y, Ctrl/Cmd+
 
 ## 10. Testing
 
-- Unit (Vitest): palette values and custom-property rendering on notes and zones; zone count selector; vote stickers and count; resize handle; selection toolbar placement rule including the flip below; file pill (rename, status line states, save and dirty dot, menu keyboard behaviour, new board confirm, open file success and error, export error and commit-before-export, focus return); tool dock; zoom cluster including Zoom to fit; timer (idle, preset, running, pause, reset, custom, label, urgent, done, single beep, popover open and close); empty hint visibility; `readingOrder`, `fitViewport`, `presentStops`; enter, step, exit including return viewport, fullscreen calls when available, fullscreenchange exit, selection cleared, edit committed; keyboard routing while presenting; `backupOff` set on write failure.
+- Unit (Vitest): palette values and custom-property rendering on notes and zones; zone count selector; vote stickers and count; resize handle; selection toolbar placement rule including the flip below; file pill (rename, status line states, save and dirty dot, menu keyboard behaviour, new board confirm, open file success and error, export error and commit-before-export, focus return); tool dock; zoom cluster including Zoom to fit; timer (idle, preset, running, pause, reset, custom, label, urgent, done, single beep, popover open and close); empty hint visibility; `addZones` (one undo entry, empty array is a no-op); `LAYOUTS` and `applyLayout` (zones, colours, centring, one undo entry); starter layout buttons on the empty hint; `readingOrder`, `fitViewport`, `presentStops`; enter, step, exit including return viewport, fullscreen calls when available, fullscreenchange exit, selection cleared, edit committed; keyboard routing while presenting; `backupOff` set on write failure.
 - Browser (Playwright): existing specs updated for the new names (Save file button, board menu items, New note) and for the tablet test's empty-canvas tap (below the file pill); a new desktop spec for Present mode: create two zones with notes, press `P`, the tool dock is hidden and the present hint shows `1 / 3`, ArrowRight shows `2 / 3` and zooms in, Escape restores the original viewport and the dock.
 - Every existing behaviour test keeps passing, adjusted only where names or markup change.
 
