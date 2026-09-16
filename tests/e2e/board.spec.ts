@@ -207,6 +207,26 @@ test('the page exposes landmarks, a heading and named toolbars', async ({ page }
   }
 });
 
+test('the page carries the metadata a shared link needs', async ({ page }) => {
+  const content = (sel: string) => page.locator(sel).getAttribute('content');
+  expect(await content('meta[name="description"]')).toContain('workshop');
+  expect(await content('meta[property="og:title"]')).toBe('Sessionboard');
+  expect(await content('meta[property="og:description"]')).toContain('workshop');
+  expect(await content('meta[name="twitter:card"]')).toBe('summary_large_image');
+
+  // The commonest way a share card breaks is an og:image that 404s, so resolve it.
+  const src = (await content('meta[property="og:image"]'))!;
+  const res = await page.request.get(src);
+  expect(res.status()).toBe(200);
+  expect(res.headers()['content-type']).toContain('image');
+
+  // Malformed structured data is worse than none: it has to parse and name the app.
+  const ld = await page.locator('script[type="application/ld+json"]').textContent();
+  const parsed = JSON.parse(ld!);
+  expect(parsed['@type']).toBe('SoftwareApplication');
+  expect(parsed.name).toBe('Sessionboard');
+});
+
 test('starting a new board asks before discarding a board restored from the backup', async ({ page, context }) => {
   await createCard(page, 300, 300, 'Survives a reload');
   await page.waitForTimeout(800); // the backup write is debounced
