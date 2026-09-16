@@ -2,6 +2,23 @@
   "name": "sessionboard",
   "private": true,
   "version": "0.1.0",
+  "description": "A sticky-note board for running a workshop from one screen.",
+  "license": "MIT",
+  "author": "Willie Chieukam",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/williechieukam/session-board.git"
+  },
+  "keywords": [
+    "workshop",
+    "retrospective",
+    "sticky-notes",
+    "whiteboard",
+    "facilitation",
+    "local-first",
+    "offline",
+    "pwa"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",

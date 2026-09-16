@@ -153,4 +153,5 @@ rename still load.
 
 ## Licence
 
-None chosen yet.
+MIT. See [LICENSE](LICENSE). Use it, fork it, sell it — keep the copyright
+notice.
