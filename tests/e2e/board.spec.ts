@@ -383,6 +383,47 @@ test('a retro board reads as three colours, not a wall of yellow', async ({ page
   expect(colours).toContain('blue');
 });
 
+test('the board menu fits a narrow window', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.getByRole('button', { name: 'Board menu' }).click();
+  const menu = page.getByRole('menu', { name: 'Board menu' });
+  await expect(menu).toBeVisible();
+  const box = await menu.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { left: Math.round(r.left), right: Math.round(r.right), fits: r.left >= -0.5 && r.right <= window.innerWidth + 0.5 };
+  });
+  expect(box).toMatchObject({ fits: true });
+  // The theme checks live at the far end of the menu, so they are what fell off the edge.
+  await expect(page.getByRole('menuitemradio', { name: 'Dark' })).toBeInViewport();
+});
+
+test('the shortcuts sheet opens from the menu and from the question mark', async ({ page }) => {
+  await page.getByRole('button', { name: 'Board menu' }).click();
+  await page.getByRole('menuitem', { name: 'Keyboard shortcuts' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+  await expect(sheet).toBeVisible();
+  await expect(sheet).toContainText('New note in the middle of the view');
+  await page.keyboard.press('Escape');
+  await expect(sheet).toBeHidden();
+
+  // And without knowing the menu exists.
+  await page.keyboard.press('?');
+  await expect(page.getByRole('dialog', { name: 'Keyboard shortcuts' })).toBeVisible();
+});
+
+test('a note abandoned without typing leaves nothing behind', async ({ page }) => {
+  const o = await boardOrigin(page);
+  await page.mouse.dblclick(o.x + 400, o.y + 300);
+  await expect(page.locator('textarea.card-editor')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(200);
+
+  // No blank card to distort zone counts, Present framing or the export bounds.
+  await expect(page.getByTestId('card')).toHaveCount(0);
+  // And no undo step that would bring one back.
+  await expect(page.getByRole('button', { name: 'Undo' })).toBeDisabled();
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();

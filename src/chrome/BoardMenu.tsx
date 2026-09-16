@@ -3,6 +3,7 @@ import type React from 'react';
 import { exportPng, newBoard, openFromFile } from './fileActions';
 import { CheckIcon, ChevronDownIcon } from './icons';
 import { THEME_CHOICES, useThemeStore, type ThemeChoice } from '../theme/theme';
+import { useUiStore } from '../store/uiStore';
 
 const THEME_LABELS: Record<ThemeChoice, string> = { system: 'System', light: 'Light', dark: 'Dark' };
 
@@ -10,6 +11,7 @@ const ITEMS: { label: string; run: () => void | Promise<void> }[] = [
   { label: 'New board', run: newBoard },
   { label: 'Open file…', run: openFromFile },
   { label: 'Export PNG', run: exportPng },
+  { label: 'Keyboard shortcuts', run: () => useUiStore.getState().setHelpOpen(true) },
 ];
 
 export function BoardMenu() {

@@ -89,7 +89,7 @@ test('board menu opens on its first item, moves with arrows, closes with Escape'
   expect(btn).toHaveAttribute('aria-expanded', 'false');
   fireEvent.click(btn);
   expect(btn).toHaveAttribute('aria-expanded', 'true');
-  expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['New board', 'Open file…', 'Export PNG']);
+  expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['New board', 'Open file…', 'Export PNG', 'Keyboard shortcuts']);
   expect(document.activeElement).toBe(item('New board'));
   const menu = screen.getByRole('menu');
   fireEvent.keyDown(menu, { key: 'ArrowDown' });

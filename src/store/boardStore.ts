@@ -20,6 +20,8 @@ export interface BoardState {
   updateCardText(id: string, text: string): void;
   /** Grow a card so its text fits. Never shrinks: a hand-sized note keeps the size it was given. */
   growCardTo(id: string, height: number): void;
+  /** Drop a note that was never written in. Creating then abandoning one is a no-op. */
+  discardEmptyCard(id: string): void;
   /** Pass `{ coalesce }` for keyboard nudges: `coalesce: true` extends the current nudge run instead of recording. */
   moveItems(ids: string[], dx: number, dy: number, opts?: { coalesce?: boolean }): void;
   resizeItem(id: string, rect: Rect): void;
@@ -122,6 +124,20 @@ export const useBoardStore = create<BoardState>()((set, get) => {
       }
       mutate(apply);
       if (opts) set({ nudgeRun: [...ids] });
+    },
+
+    discardEmptyCard(id) {
+      set((st) => {
+        const card = st.board.cards.find((c) => c.id === id);
+        if (!card || card.text.trim() !== '' || card.votes > 0) return {};
+        const board = { ...st.board, cards: st.board.cards.filter((c) => c.id !== id) };
+        // Creating a note and walking away changed nothing, so the entry the creation recorded
+        // should go too. Otherwise undo restores a blank note nobody asked for.
+        const last = st.history.past[st.history.past.length - 1];
+        const fromCreation = last !== undefined && !last.cards.some((c) => c.id === id);
+        const history = fromCreation ? { past: st.history.past.slice(0, -1), future: st.history.future } : st.history;
+        return { board, history, selection: st.selection.filter((x) => x !== id), dirty: true };
+      });
     },
 
     growCardTo(id, height) {

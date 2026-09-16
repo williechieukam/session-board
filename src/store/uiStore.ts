@@ -11,6 +11,8 @@ export interface UiState {
   spaceHeld: boolean;
   /** Browser backup writes failed, so the file pill reports that the backup is off. */
   backupOff: boolean;
+  /** The keyboard shortcuts sheet is open. */
+  helpOpen: boolean;
   /** Present mode is on. Owned by src/board/present.ts. */
   presenting: boolean;
   /** Current Present-mode stop; 0 is the overview. */
@@ -24,6 +26,7 @@ export interface UiState {
   showToast(message: string): void;
   setSpaceHeld(v: boolean): void;
   setBackupOff(v: boolean): void;
+  setHelpOpen(v: boolean): void;
 }
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -34,6 +37,7 @@ export const useUiStore = create<UiState>()((set) => ({
   toast: null,
   spaceHeld: false,
   backupOff: false,
+  helpOpen: false,
   presenting: false,
   presentStop: 0,
   presentReturn: null,
@@ -47,6 +51,7 @@ export const useUiStore = create<UiState>()((set) => ({
   },
   setSpaceHeld(v) { set({ spaceHeld: v }); },
   setBackupOff(v) { set({ backupOff: v }); },
+  setHelpOpen(v) { set({ helpOpen: v }); },
 }));
 
 /** True when a pointer-down should pan the board (middle button, or space held) rather than act on its target. */

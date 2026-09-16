@@ -9,6 +9,7 @@ import { useBoardStore } from './store/boardStore';
 import { readBackup, startBackup } from './store/backup';
 import { usePresentMode } from './board/usePresentMode';
 import { PresentHint } from './chrome/PresentHint';
+import { ShortcutsSheet } from './chrome/ShortcutsSheet';
 import { useUiStore } from './store/uiStore';
 
 export function App() {
@@ -39,6 +40,7 @@ export function App() {
       <ToolDock />
       <ZoomCluster />
       <PresentHint />
+      <ShortcutsSheet />
       <Toast />
     </div>
   );

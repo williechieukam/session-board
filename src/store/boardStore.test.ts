@@ -281,3 +281,33 @@ test('growCardTo grows a card to fit, never shrinks it, and is not its own undo 
   st().growCardTo(id, original);
   expect(st().board.cards[0].height).toBe(original + 40);
 });
+
+test('discardEmptyCard makes create-then-abandon a no-op, including in history', () => {
+  const st = () => useBoardStore.getState();
+  useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false, savedToFile: false });
+
+  const id = st().addCard({ x: 0, y: 0 });
+  st().setSelection([id]);
+  const entriesAfterCreate = st().history.past.length;
+  expect(entriesAfterCreate).toBe(1);
+
+  st().discardEmptyCard(id);
+  expect(st().board.cards).toHaveLength(0);
+  expect(st().selection).toEqual([]);
+  // The creation's entry goes too, so undo does not restore a blank note nobody wrote.
+  expect(st().history.past).toHaveLength(0);
+});
+
+test('discardEmptyCard refuses notes that hold anything', () => {
+  const st = () => useBoardStore.getState();
+  useBoardStore.setState({ board: createEmptyBoard(), selection: [], history: { past: [], future: [] }, dirty: false, savedToFile: false });
+
+  const written = st().addCard({ x: 0, y: 0, text: 'Flaky CI' });
+  st().discardEmptyCard(written);
+  expect(st().board.cards).toHaveLength(1);
+
+  const voted = st().addCard({ x: 10, y: 10 });
+  st().addVote([voted]);
+  st().discardEmptyCard(voted);
+  expect(st().board.cards).toHaveLength(2);
+});

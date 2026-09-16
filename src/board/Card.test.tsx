@@ -179,3 +179,22 @@ test('Enter inside the editor belongs to the textarea, not the card', () => {
   // The card's own handler must not cancel the newline the textarea is about to insert.
   expect(event.defaultPrevented).toBe(false);
 });
+
+test('a note never written in discards itself, and one with text does not', () => {
+  const blank = createCard({ x: 0, y: 0 }, 1);
+  useBoardStore.setState((s) => ({ board: { ...s.board, cards: [blank] } }));
+  useUiStore.setState({ editingId: blank.id });
+  const { unmount } = render(<Card card={blank} />);
+  fireEvent.blur(screen.getByRole('textbox'), { target: { value: '   ' } });
+  expect(useBoardStore.getState().board.cards).toHaveLength(0);
+  unmount();
+
+  const written = createCard({ x: 0, y: 0, text: 'Flaky CI' }, 1);
+  useBoardStore.setState((s) => ({ board: { ...s.board, cards: [written] } }));
+  useUiStore.setState({ editingId: written.id });
+  render(<Card card={written} />);
+  // Clearing an existing note is an edit, not an abandonment: the note stays.
+  fireEvent.blur(screen.getByRole('textbox'), { target: { value: '' } });
+  expect(useBoardStore.getState().board.cards).toHaveLength(1);
+  expect(useBoardStore.getState().board.cards[0].text).toBe('');
+});

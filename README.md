@@ -71,6 +71,9 @@ wearing.
 
 ### Keyboard
 
+The board menu lists these too, under Keyboard shortcuts, so you never have to come
+here to find them.
+
 | Key | Action |
 | --- | --- |
 | `N` | New note in the middle of the view |
@@ -85,6 +88,7 @@ wearing.
 | `Ctrl`/`Cmd` `A` | Select every note |
 | `Ctrl`/`Cmd` `D` | Duplicate the selection |
 | Space and drag | Pan |
+| `?` | Open the keyboard shortcuts sheet |
 
 ## Saving
 

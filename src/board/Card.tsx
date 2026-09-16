@@ -97,7 +97,11 @@ function CardView({ card }: { card: CardModel }) {
   });
 
   const commitText = (value: string) => {
-    useBoardStore.getState().updateCardText(card.id, value);
+    const st = useBoardStore.getState();
+    // Blank when the edit began and blank now: this note was never written in, and leaving it
+    // would distort zone counts, Present framing and the export bounds.
+    if (card.text.trim() === '' && value.trim() === '') st.discardEmptyCard(card.id);
+    else st.updateCardText(card.id, value);
     useUiStore.getState().setEditing(null);
   };
 

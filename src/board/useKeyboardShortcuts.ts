@@ -85,6 +85,8 @@ export function useKeyboardShortcuts(): void {
         st.moveItems(st.selection, arrow[0] * step, arrow[1] * step, { coalesce: e.repeat });
         return;
       }
+      // The one shortcut that explains the others.
+      if (e.key === '?') { e.preventDefault(); useUiStore.getState().setHelpOpen(true); return; }
       if (key === 'n') { e.preventDefault(); createCardCentredAt(viewportCentre()); return; }
       if (key === 'z') { e.preventDefault(); createZoneCentred(); return; }
       if (key === 'p') { e.preventDefault(); enterPresent(); return; }
