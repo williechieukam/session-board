@@ -3,7 +3,10 @@ dist
 test-results
 playwright-report
 *.tsbuildinfo
-.claude/audit-reports/
+# Audit reports: the JSON summaries are the scored trend and are worth keeping.
+# The HTML is ~230 kB of base64 screenshots each, so only that is ignored — and it has to
+# be matched by pattern, because git cannot re-include a file inside an excluded directory.
+.claude/audit-reports/*.html
 
 # Tool output, regenerated per session
 .impeccable/
