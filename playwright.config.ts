@@ -13,7 +13,15 @@ export default defineConfig({
    */
   webServer: [
     { command: 'npm run dev -- --port 5173 --strictPort', url: 'http://localhost:5173', reuseExistingServer: !process.env.CI },
-    { command: 'npm run build && npm run preview -- --port 4173 --strictPort', url: 'http://localhost:4173', reuseExistingServer: !process.env.CI, timeout: 120_000 },
+    /*
+     * GITHUB_ACTIONS is cleared for this build on purpose. With it set, the build targets the
+     * Pages subpath while `vite preview` serves dist at the root — and preview answers unknown
+     * paths with index.html, so every asset came back 200 with a text/html body, nothing
+     * booted, and the worker never registered. Building at the root here keeps the served
+     * origin and the built URLs in agreement, in CI and locally alike. The subpath build is
+     * covered by the deploy step, which rebuilds dist after this server has done its job.
+     */
+    { command: 'GITHUB_ACTIONS= npm run build && npm run preview -- --port 4173 --strictPort', url: 'http://localhost:4173', reuseExistingServer: !process.env.CI, timeout: 120_000 },
   ],
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testMatch: /(board|present)\.spec\.ts/ },
