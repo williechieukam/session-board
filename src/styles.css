@@ -11,6 +11,8 @@
   --hover: oklch(0.965 0.006 240);
   --sticker: oklch(0.58 0.19 27);
   --coral-deep: oklch(0.54 0.19 27);
+  --urgent-ink: oklch(1 0 0);
+  --danger: oklch(0.54 0.19 27);
   --shadow-panel: 0 1px 2px oklch(0.3 0.03 240 / 0.08), 0 10px 28px -10px oklch(0.3 0.03 240 / 0.22);
   --shadow-note: 0 0 0 1px oklch(0.3 0.03 240 / 0.06), 0 1px 1px oklch(0.3 0.03 240 / 0.08), 0 10px 16px -10px oklch(0.3 0.03 240 / 0.38);
   --ease-out: cubic-bezier(.25, 1, .5, 1);
@@ -165,9 +167,9 @@ button, input, textarea { font: inherit; color: inherit; }
 .t-btn { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 999px; background: var(--primary-soft); color: var(--primary); cursor: pointer; }
 .t-btn .icon { width: 16px; height: 16px; }
 .t-bar { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--primary); transition: width 250ms linear; }
-.timer.urgent { background: var(--coral-deep); color: var(--panel); }
-.timer.urgent .timer-main .icon, .timer.urgent .t-label { color: var(--panel); }
-.timer.urgent .t-btn { background: oklch(1 0 0 / 0.2); color: var(--panel); }
+.timer.urgent { background: var(--coral-deep); color: var(--urgent-ink); }
+.timer.urgent .timer-main .icon, .timer.urgent .t-label { color: var(--urgent-ink); }
+.timer.urgent .t-btn { background: oklch(1 0 0 / 0.2); color: var(--urgent-ink); }
 .timer.urgent .t-bar { background: oklch(1 0 0 / 0.7); }
 .timer.done { box-shadow: 0 0 0 2px var(--sticker), var(--shadow-panel); }
 .timer-popover {
@@ -196,7 +198,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .step-value { --note-use: var(--panel); display: flex; align-items: center; gap: 7px; min-width: 22px; padding: 0 4px; font-family: var(--font-mono); font-size: 14px; font-weight: 600; }
 .step-value .vote-sticker { margin-right: 0; }
 .selection-toolbar > .icon-btn { width: 34px; height: 34px; }
-.selection-toolbar .danger { color: var(--coral-deep); }
+.selection-toolbar .danger { color: var(--danger); }
 
 /* ===== Session bar, empty hint, toast ===== */
 .session-bar { position: fixed; right: 16px; top: 16px; display: flex; align-items: center; gap: 10px; z-index: var(--z-chrome); }
@@ -327,8 +329,10 @@ button, input, textarea { font: inherit; color: inherit; }
     --primary-hover: oklch(0.78 0.11 232);
     --exit-hover: oklch(0.40 0.06 232);
     --hover: oklch(0.33 0.012 240);
-    --sticker: oklch(0.66 0.19 27);
-    --coral-deep: oklch(0.62 0.19 27);
+    --sticker: oklch(0.80 0.14 27);
+    --coral-deep: oklch(0.55 0.19 27);
+    --urgent-ink: oklch(0.99 0.01 27);
+    --danger: oklch(0.74 0.16 27);
     --band-fill: oklch(0.72 0.11 232 / 0.16);
     --hint-dash: oklch(0.45 0.015 240);
     --shadow-panel: 0 1px 2px oklch(0 0 0 / 0.30), 0 10px 28px -10px oklch(0 0 0 / 0.55);
@@ -354,8 +358,10 @@ button, input, textarea { font: inherit; color: inherit; }
   --primary-hover: oklch(0.78 0.11 232);
   --exit-hover: oklch(0.40 0.06 232);
   --hover: oklch(0.33 0.012 240);
-  --sticker: oklch(0.66 0.19 27);
-  --coral-deep: oklch(0.62 0.19 27);
+  --sticker: oklch(0.80 0.14 27);
+  --coral-deep: oklch(0.55 0.19 27);
+  --urgent-ink: oklch(0.99 0.01 27);
+  --danger: oklch(0.74 0.16 27);
   --band-fill: oklch(0.72 0.11 232 / 0.16);
   --hint-dash: oklch(0.45 0.015 240);
   --shadow-panel: 0 1px 2px oklch(0 0 0 / 0.30), 0 10px 28px -10px oklch(0 0 0 / 0.55);
