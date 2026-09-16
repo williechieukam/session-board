@@ -208,6 +208,14 @@ button, input, textarea { font: inherit; color: inherit; }
   background: var(--swatch-use); box-shadow: inset 0 0 0 1px var(--swatch-edge-use);
 }
 .swatch.is-on { box-shadow: inset 0 0 0 1px var(--swatch-edge-use), 0 0 0 2px var(--panel), 0 0 0 4px var(--primary); }
+.color-choice { position: relative; display: flex; align-items: center; }
+/* Slightly larger than a swatch in the set: this one is a control, not an option. */
+.swatch-trigger { width: 28px; height: 28px; }
+.swatch-trigger.is-mixed { background: var(--line); box-shadow: inset 0 0 0 1px var(--muted); }
+.color-popover {
+  position: absolute; left: 0; top: calc(100% + 8px); z-index: var(--z-popover);
+  display: grid; grid-template-columns: repeat(4, auto); gap: 2px; padding: 6px; border-radius: var(--r-sm);
+}
 .stepper { display: flex; align-items: center; gap: 2px; }
 .stepper .icon-btn { width: 32px; height: 32px; }
 .step-value { --note-use: var(--panel); display: flex; align-items: center; gap: 7px; min-width: 22px; padding: 0 4px; font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 600; }

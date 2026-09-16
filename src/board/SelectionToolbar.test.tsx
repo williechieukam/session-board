@@ -20,6 +20,7 @@ test('card actions apply to every selected card', () => {
   const b = createCard({ x: 300, y: 0 }, 2);
   useBoardStore.setState((s) => ({ board: { ...s.board, cards: [a, b] }, selection: [a.id, b.id] }));
   render(<SelectionToolbar />);
+  fireEvent.click(screen.getByTestId('color-trigger'));
   fireEvent.click(screen.getByLabelText('Colour blue'));
   fireEvent.click(screen.getByLabelText('Add vote'));
   fireEvent.click(screen.getByLabelText('Add vote'));
@@ -41,6 +42,7 @@ test('single zone shows zone colours and delete', () => {
   useBoardStore.setState((s) => ({ board: { ...s.board, zones: [z] }, selection: [z.id] }));
   render(<SelectionToolbar />);
   expect(screen.queryByLabelText('Add vote')).toBeNull();
+  fireEvent.click(screen.getByTestId('color-trigger'));
   fireEvent.click(screen.getByLabelText('Zone colour red'));
   expect(useBoardStore.getState().board.zones[0].color).toBe('red');
   fireEvent.click(screen.getByLabelText('Delete'));
@@ -86,12 +88,33 @@ test('toolbarPosition keeps clear of the top chrome', () => {
   expect(toolbarPosition(40, 127, 247)).toEqual({ left: 40, top: 259 });  // one pixel higher: flips below
 });
 
-test('shows the vote count for one card and marks the shared colour', () => {
+test('shows the vote count, and the colour control reports the shared colour at rest', () => {
   const a = createCard({ x: 0, y: 300, color: 'green', votes: 4 }, 1);
   useBoardStore.setState((s) => ({ board: { ...s.board, cards: [a] }, selection: [a.id] }));
   render(<SelectionToolbar />);
   expect(screen.getByTestId('selection-toolbar').querySelector('.step-value')).toHaveTextContent('4');
+
+  // One control at rest, wearing the note's colour and naming it.
+  const trigger = screen.getByTestId('color-trigger');
+  expect(trigger).toHaveAttribute('aria-label', 'Colour: green');
+  expect(trigger.style.getPropertyValue('--swatch')).toBe(CARD_PALETTE.green.bg);
+  expect(screen.getByTestId('selection-toolbar').querySelectorAll('.swatch')).toHaveLength(1);
+
+  // The set, and which one is current, appear only while choosing.
+  fireEvent.click(trigger);
   expect(screen.getByLabelText('Colour green')).toHaveAttribute('aria-pressed', 'true');
   expect(screen.getByLabelText('Colour blue')).toHaveAttribute('aria-pressed', 'false');
-  expect(screen.getByLabelText('Colour green').style.getPropertyValue('--swatch')).toBe(CARD_PALETTE.green.bg);
+});
+
+test('a selection with different colours reports itself as mixed', () => {
+  const a = createCard({ x: 0, y: 300, color: 'green' }, 1);
+  const b = createCard({ x: 300, y: 300, color: 'blue' }, 2);
+  useBoardStore.setState((s) => ({ board: { ...s.board, cards: [a, b] }, selection: [a.id, b.id] }));
+  render(<SelectionToolbar />);
+  const trigger = screen.getByTestId('color-trigger');
+  expect(trigger).toHaveAttribute('aria-label', 'Colour: mixed');
+  expect(trigger).toHaveClass('is-mixed');
+  // Nothing is pressed, because no colour is shared.
+  fireEvent.click(trigger);
+  expect(screen.getByLabelText('Colour green')).toHaveAttribute('aria-pressed', 'false');
 });

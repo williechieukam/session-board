@@ -36,8 +36,8 @@ Then open http://localhost:5173.
 ## Using it
 
 **Notes.** Double-click empty canvas to add one, then type. Escape commits.
-Drag to move, or drag the bottom-right corner to resize. Eight colours, set
-from the toolbar that appears above a selection. That toolbar also adds dot
+Drag to move, or drag the bottom-right corner to resize. Eight colours, behind
+one swatch in the toolbar that appears above a selection. That toolbar also adds dot
 votes, which show as stickers along the bottom of the note.
 
 **Zones.** Press `Z` for a zone, drag it by its header, and double-click the

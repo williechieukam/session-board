@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type React from 'react';
 import { CARD_COLORS, ZONE_COLORS } from '../model/types';
 import { CARD_PALETTE, ZONE_PALETTE, type Swatch } from '../model/palette';
+import { ColorChoice } from './ColorChoice';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
 import { boardToScreen, boundsOf } from './coords';
@@ -39,13 +40,6 @@ export function toolbarPosition(
   // A toolbar wider than the window pins to the left margin rather than centring off-screen.
   const rightMost = Math.max(EDGE_MARGIN, fit.containerWidth - fit.toolbarWidth - EDGE_MARGIN);
   return { left: Math.min(Math.max(left, EDGE_MARGIN), rightMost), top: y };
-}
-
-function swatchStyle(light: Swatch, dark: Swatch): React.CSSProperties {
-  return {
-    '--swatch': light.bg, '--swatch-edge': light.border,
-    '--swatch-dark': dark.bg, '--swatch-edge-dark': dark.border,
-  } as React.CSSProperties;
 }
 
 export function SelectionToolbar() {
@@ -91,17 +85,13 @@ export function SelectionToolbar() {
     const shared = cards.every((c) => c.color === cards[0].color) ? cards[0].color : null;
     return (
       <div ref={ref} className="panel selection-toolbar no-export" data-testid="selection-toolbar" role="toolbar" aria-label="Selection" style={style} onPointerDown={stop}>
-        {CARD_COLORS.map((c) => (
-          <button
-            key={c}
-            type="button"
-            className={'swatch' + (c === shared ? ' is-on' : '')}
-            aria-label={`Colour ${c}`}
-            aria-pressed={c === shared}
-            style={swatchStyle(CARD_PALETTE[c], CARD_PALETTE[c].dark)}
-            onClick={() => st.setCardColor(cardIds, c)}
-          />
-        ))}
+        <ColorChoice
+          colors={CARD_COLORS}
+          value={shared}
+          label="Colour"
+          swatchOf={(c) => ({ light: CARD_PALETTE[c], dark: CARD_PALETTE[c].dark })}
+          onPick={(c) => st.setCardColor(cardIds, c)}
+        />
         <span className="divider" aria-hidden="true" />
         <div className="stepper">
           <IconButton label="Remove vote" onClick={() => st.removeVote(cardIds)}><MinusIcon /></IconButton>
@@ -122,17 +112,13 @@ export function SelectionToolbar() {
     const z = zones[0];
     return (
       <div ref={ref} className="panel selection-toolbar no-export" data-testid="selection-toolbar" role="toolbar" aria-label="Selection" style={style} onPointerDown={stop}>
-        {ZONE_COLORS.map((c) => (
-          <button
-            key={c}
-            type="button"
-            className={'swatch' + (c === z.color ? ' is-on' : '')}
-            aria-label={`Zone colour ${c}`}
-            aria-pressed={c === z.color}
-            style={swatchStyle(solid(ZONE_PALETTE[c].border), solid(ZONE_PALETTE[c].dark.border))}
-            onClick={() => st.setZoneColor(z.id, c)}
-          />
-        ))}
+        <ColorChoice
+          colors={ZONE_COLORS}
+          value={z.color}
+          label="Zone colour"
+          swatchOf={(c) => ({ light: solid(ZONE_PALETTE[c].border), dark: solid(ZONE_PALETTE[c].dark.border) })}
+          onPick={(c) => st.setZoneColor(z.id, c)}
+        />
         <span className="divider" aria-hidden="true" />
         <IconButton label="Delete" keys="Del" className="danger" onClick={() => st.deleteItems([z.id])}><TrashIcon /></IconButton>
       </div>

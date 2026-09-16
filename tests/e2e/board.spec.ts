@@ -424,6 +424,42 @@ test('a note abandoned without typing leaves nothing behind', async ({ page }) =
   await expect(page.getByRole('button', { name: 'Undo' })).toBeDisabled();
 });
 
+test('colour is one control that opens the set, not eight sitting on the note', async ({ page }) => {
+  await createCard(page, 400, 300, 'Recolour me');
+  const o = await boardOrigin(page);
+  await page.mouse.click(o.x + 400, o.y + 300);
+  const toolbar = page.getByTestId('selection-toolbar');
+  await expect(toolbar).toBeVisible();
+
+  // One colour control at rest, not the whole palette.
+  await expect(toolbar.locator('.swatch')).toHaveCount(1);
+  await expect(page.getByTestId('color-popover')).toBeHidden();
+
+  await page.getByTestId('color-trigger').click();
+  const popover = page.getByTestId('color-popover');
+  await expect(popover).toBeVisible();
+  await expect(popover.locator('.swatch')).toHaveCount(8);
+
+  await popover.getByRole('button', { name: 'Colour green' }).click();
+  await expect(popover).toBeHidden();
+  await expect(page.getByTestId('card')).toHaveAttribute('data-color', 'green');
+  // The trigger now reports what it is showing.
+  await expect(page.getByTestId('color-trigger')).toHaveAttribute('aria-label', 'Colour: green');
+});
+
+test('the colour set stays on screen on a narrow window', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await createCard(page, 180, 400, 'Phone note');
+  const o = await boardOrigin(page);
+  await page.mouse.click(o.x + 180, o.y + 400);
+  await page.getByTestId('color-trigger').click();
+  const box = await page.getByTestId('color-popover').evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { left: Math.round(r.left), right: Math.round(r.right), fits: r.left >= -0.5 && r.right <= window.innerWidth + 0.5 };
+  });
+  expect(box).toMatchObject({ fits: true });
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();
