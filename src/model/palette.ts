@@ -49,6 +49,20 @@ export const CARD_PALETTE: Record<CardColor, CardSwatch> = {
   },
 };
 
+/**
+ * The note colour a zone hands to notes created inside it.
+ *
+ * Eight note colours existed and every note was yellow, so a retro read as one hue and the
+ * columns did nothing at a glance. A note born in a zone now takes that zone's colour, which
+ * is what makes three columns legible from the back of a room.
+ */
+export const ZONE_NOTE_COLOR: Record<ZoneColor, CardColor> = {
+  neutral: 'yellow',
+  blue: 'blue',
+  green: 'green',
+  red: 'pink',
+};
+
 /** Zone sheet colours. `bg` fills the sheet; `border` outlines it and colours the zone swatch. */
 export const ZONE_PALETTE: Record<ZoneColor, ZoneSwatch> = {
   neutral: {

@@ -1,5 +1,5 @@
 import { CARD_COLORS, ZONE_COLORS } from './types';
-import { CARD_PALETTE, ZONE_PALETTE } from './palette';
+import { CARD_PALETTE, ZONE_PALETTE, ZONE_NOTE_COLOR } from './palette';
 
 const OKLCH = /^oklch\((?:1|0|0\.\d+) (?:0|0\.\d+) \d+\)$/;
 
@@ -35,4 +35,15 @@ test('a dark note carries light ink, so its text stays legible', () => {
     // Deep note, light ink: a wide lightness gap is what keeps 20 px text readable.
     expect(lightnessOf(p.dark.ink) - lightnessOf(p.dark.bg)).toBeGreaterThan(0.4);
   }
+});
+
+test('every zone colour hands a real note colour to notes born inside it', () => {
+  expect(Object.keys(ZONE_NOTE_COLOR).sort()).toEqual([...ZONE_COLORS].sort());
+  for (const [zone, card] of Object.entries(ZONE_NOTE_COLOR)) {
+    expect(CARD_PALETTE[card], `${zone} maps to a colour notes actually have`).toBeDefined();
+  }
+  // The neutral zone is the plain case, so it keeps the default note colour.
+  expect(ZONE_NOTE_COLOR.neutral).toBe('yellow');
+  // Distinct zones must not collapse to one hue, or columns stop reading apart.
+  expect(new Set(Object.values(ZONE_NOTE_COLOR)).size).toBe(ZONE_COLORS.length);
 });

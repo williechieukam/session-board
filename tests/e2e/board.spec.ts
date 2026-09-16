@@ -360,6 +360,29 @@ test('a keyboard alone can reach a zone and rename it', async ({ page }) => {
   await expect(page.locator('.zone-label')).toHaveText('Went well');
 });
 
+test('a retro board reads as three colours, not a wall of yellow', async ({ page }) => {
+  await page.getByRole('button', { name: 'Retro', exact: true }).click();
+  await expect(page.getByTestId('zone')).toHaveCount(3);
+
+  // One note per column, created by double-clicking inside each zone.
+  const zones = await page.getByTestId('zone').evaluateAll((els) => els.map((el) => {
+    const r = el.getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+  }));
+  for (const [i, z] of zones.entries()) {
+    await page.mouse.dblclick(z.x, z.y);
+    await page.locator('textarea.card-editor').fill(`Note ${i + 1}`);
+    await page.keyboard.press('Escape');
+  }
+
+  const colours = await page.getByTestId('card').evaluateAll((els) => els.map((el) => el.getAttribute('data-color')));
+  expect(colours).toHaveLength(3);
+  // Went well is green, To improve is neutral, Actions is blue: three distinct hues.
+  expect(new Set(colours).size).toBe(3);
+  expect(colours).toContain('green');
+  expect(colours).toContain('blue');
+});
+
 test('export produces a PNG download', async ({ page }) => {
   await createCard(page, 300, 300, 'Picture');
   await page.getByRole('button', { name: 'Board menu' }).click();

@@ -1,7 +1,8 @@
 import { CARD_DEFAULT_SIZE, ZONE_DEFAULT_SIZE, type Viewport } from '../model/types';
 import { useBoardStore } from '../store/boardStore';
 import { useUiStore } from '../store/uiStore';
-import { boundsOf, fitViewport, screenToBoard, zoomAround, type Point } from './coords';
+import { areaAt, boundsOf, fitViewport, screenToBoard, zoomAround, type Point } from './coords';
+import { ZONE_NOTE_COLOR } from '../model/palette';
 
 /** The mounted board container; Board.tsx sets this in an effect. */
 export const boardContainer: { el: HTMLElement | null } = { el: null };
@@ -27,7 +28,11 @@ export function viewportCentre(): Point {
 /** Create a card centred on a board-space point, select it, and start editing. Returns the id. */
 export function createCardCentredAt(point: Point): string {
   const st = useBoardStore.getState();
-  const id = st.addCard({ x: point.x - CARD_DEFAULT_SIZE.width / 2, y: point.y - CARD_DEFAULT_SIZE.height / 2 });
+  // A note born inside a zone wears that zone's colour. Moving it later never recolours it:
+  // by then the colour is the author's, and changing it silently would be a lie about the board.
+  const zone = areaAt(st.board.zones, point);
+  const color = zone ? ZONE_NOTE_COLOR[zone.color] : undefined;
+  const id = st.addCard({ x: point.x - CARD_DEFAULT_SIZE.width / 2, y: point.y - CARD_DEFAULT_SIZE.height / 2, ...(color ? { color } : {}) });
   st.setSelection([id]);
   useUiStore.getState().setEditing(id);
   return id;

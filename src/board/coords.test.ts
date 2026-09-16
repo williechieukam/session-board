@@ -1,4 +1,4 @@
-import { screenToBoard, boardToScreen, zoomAround, clampZoom, normalizeRect, rectsIntersect, boundsOf, countCentresInside, fitViewport } from './coords';
+import { screenToBoard, boardToScreen, zoomAround, clampZoom, normalizeRect, rectsIntersect, boundsOf, countCentresInside, fitViewport, areaAt } from './coords';
 
 const vp = { x: 100, y: 50, zoom: 2 };
 
@@ -61,4 +61,17 @@ test('fitViewport centres the rect inside the margins and caps the zoom', () => 
   expect(big.zoom).toBeCloseTo(0.5);                                   // min(900 / 1800, 600 / 600)
   expect(big.x).toBeCloseTo(500 - 1000 * 0.5);
   expect(fitViewport({ x: 0, y: 0, width: 100000, height: 10 }, size, m, 2.3).zoom).toBe(0.25);
+});
+
+test('areaAt finds the area under a point, latest first where they overlap', () => {
+  const a = { id: 'a', x: 0, y: 0, width: 200, height: 100 };
+  const b = { id: 'b', x: 100, y: 50, width: 200, height: 100 };
+  expect(areaAt([a, b], { x: 10, y: 10 })?.id).toBe('a');
+  // Overlapping: the later one is drawn on top, so it is the one a person clicked into.
+  expect(areaAt([a, b], { x: 150, y: 75 })?.id).toBe('b');
+  expect(areaAt([a, b], { x: 500, y: 500 })).toBeNull();
+  expect(areaAt([], { x: 0, y: 0 })).toBeNull();
+  // Edges: the far edge belongs to the next area, matching countCentresInside.
+  expect(areaAt([a], { x: 0, y: 0 })?.id).toBe('a');
+  expect(areaAt([a], { x: 200, y: 0 })).toBeNull();
 });

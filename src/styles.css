@@ -22,6 +22,12 @@
   --z-selection-toolbar: 150;
   --z-popover: 200;
   --z-toast: 300;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 17px;
+  --text-lg: 20px;
+  /* Not on the ratio on purpose: sized for ~50 mm capitals on a 3 m projection. */
+  --text-display: 38px;
   --band-fill: oklch(0.44 0.10 232 / 0.10);
   --hint-dash: oklch(0.72 0.02 240);
   --primary-hover: oklch(0.40 0.10 232);
@@ -33,7 +39,7 @@
 /* ===== Base ===== */
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
-body { font-family: var(--font-ui); font-size: 14px; color: var(--ink); background: var(--wall); overflow: hidden; -webkit-font-smoothing: antialiased; }
+body { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--ink); background: var(--wall); overflow: hidden; -webkit-font-smoothing: antialiased; }
 button, input, textarea { font: inherit; color: inherit; }
 .app { height: 100%; display: flex; flex-direction: column; }
 
@@ -56,11 +62,11 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 .card[data-color="white"] { box-shadow: 0 0 0 1px var(--note-edge-use), var(--shadow-note-flat); }
 .card.selected { outline: 2px solid var(--primary); outline-offset: 3px; }
-.card-text { flex: 1; min-height: 0; overflow: hidden; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 20px; line-height: 1.3; font-weight: 500; }
-.card-editor { flex: 1; min-height: 0; width: 100%; resize: none; border: none; outline: none; background: transparent; padding: 0; font-size: 20px; line-height: 1.3; font-weight: 500; color: var(--note-ink-use); }
+.card-text { flex: 1; min-height: 0; overflow: hidden; white-space: pre-wrap; overflow-wrap: anywhere; font-size: var(--text-lg); line-height: 1.3; font-weight: 500; }
+.card-editor { flex: 1; min-height: 0; width: 100%; resize: none; border: none; outline: none; background: transparent; padding: 0; font-size: var(--text-lg); line-height: 1.3; font-weight: 500; color: var(--note-ink-use); }
 .card-votes { display: flex; align-items: center; height: 18px; margin-top: 6px; }
 .vote-sticker { flex: none; width: 13px; height: 13px; border-radius: 50%; margin-right: -3px; background: var(--sticker); box-shadow: 0 0 0 2px var(--note-use), 0 1px 1px oklch(0.3 0.03 240 / 0.3); }
-.vote-count { margin-left: 11px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.vote-count { margin-left: 11px; font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 600; font-variant-numeric: tabular-nums; }
 
 /* Resize handle: a 24 px touch target centred on the corner, drawing an 11 px square. */
 .resize-handle { position: absolute; right: -12px; bottom: -12px; width: 24px; height: 24px; cursor: nwse-resize; touch-action: none; }
@@ -77,10 +83,10 @@ button, input, textarea { font: inherit; color: inherit; }
   display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 18px;
   border-radius: 16px 16px 0 0; cursor: grab;
 }
-.zone-label { min-width: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.005em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.zone-label-editor { min-width: 0; flex: 1; font-size: 17px; font-weight: 800; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); padding: 2px 6px; outline: none; }
+.zone-label { min-width: 0; font-size: var(--text-md); font-weight: 800; letter-spacing: -0.005em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zone-label-editor { min-width: 0; flex: 1; font-size: var(--text-md); font-weight: 800; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); padding: 2px 6px; outline: none; }
 .zone-label-editor:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
-.zone-count { flex: none; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.zone-count { flex: none; font-family: var(--font-mono); font-size: var(--text-xs); color: var(--muted); }
 .zone .resize-handle { pointer-events: auto; }
 
 /* ===== Chrome primitives ===== */
@@ -101,7 +107,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .tip {
   position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translateX(-50%);
   display: flex; gap: 8px; align-items: center; white-space: nowrap; pointer-events: none;
-  background: var(--ink); color: var(--panel); font-size: 12px; font-weight: 700; padding: 5px 8px; border-radius: 7px;
+  background: var(--ink); color: var(--panel); font-size: var(--text-xs); font-weight: 700; padding: 5px 8px; border-radius: 7px;
   opacity: 0; visibility: hidden; transition: opacity 150ms var(--ease-out), visibility 0s linear 150ms;
 }
 .tip kbd { font-family: var(--font-mono); font-weight: 500; opacity: 0.75; }
@@ -114,7 +120,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .zoom-cluster .icon-btn { width: 38px; height: 38px; }
 .zoom-value {
   width: 52px; height: 38px; border: 0; border-radius: 10px; background: transparent; cursor: pointer;
-  font-family: var(--font-mono); font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 500; font-variant-numeric: tabular-nums;
 }
 .zoom-value:hover { background: var(--hover); }
 
@@ -128,17 +134,17 @@ button, input, textarea { font: inherit; color: inherit; }
 .app-mark::after { content: ''; position: absolute; right: 4px; bottom: 4px; width: 9px; height: 9px; border-radius: 2px; background: var(--panel); }
 .file-pill .board-name {
   width: 16ch; min-width: 8ch; padding: 5px 8px; border: 1px solid transparent; border-radius: 8px; background: transparent;
-  font-size: 16px; font-weight: 700; text-overflow: ellipsis;
+  font-size: var(--text-md); font-weight: 700; text-overflow: ellipsis;
 }
 .file-pill .board-name:hover { border-color: var(--line); }
 .file-pill .board-name:focus { border-color: var(--line); outline: 2px solid var(--primary); outline-offset: 1px; }
 .board-menu { position: relative; }
 .menu-btn { width: 32px; height: 32px; color: var(--muted); }
-.status { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.status { display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--muted); white-space: nowrap; }
 .status .icon { width: 16px; height: 16px; }
 .save-btn {
   display: flex; align-items: center; gap: 6px; padding: 8px 12px; border: 0; border-radius: 10px; background: transparent; cursor: pointer;
-  font-size: 14px; font-weight: 700; color: var(--primary); white-space: nowrap; transition: background-color 150ms var(--ease-out);
+  font-size: var(--text-sm); font-weight: 700; color: var(--primary); white-space: nowrap; transition: background-color 150ms var(--ease-out);
 }
 .save-btn:hover { background: var(--primary-soft); }
 .save-btn:disabled { opacity: 0.45; cursor: default; }
@@ -147,7 +153,7 @@ button, input, textarea { font: inherit; color: inherit; }
   position: absolute; left: -8px; top: calc(100% + 10px); z-index: var(--z-popover);
   flex-direction: column; align-items: stretch; min-width: 200px; padding: 6px; border-radius: 12px;
 }
-.menu-item { text-align: left; padding: 9px 12px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; font-size: 14px; font-weight: 500; }
+.menu-item { text-align: left; padding: 9px 12px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; font-size: var(--text-sm); font-weight: 500; }
 .menu-item:hover, .menu-item:focus-visible { background: var(--hover); }
 @media (max-width: 700px) { .status { display: none; } }
 @media (prefers-reduced-motion: reduce) { .save-btn { transition: none; } }
@@ -161,10 +167,10 @@ button, input, textarea { font: inherit; color: inherit; }
 .timer.idle { padding-right: 16px; }
 .timer-main { display: flex; align-items: center; gap: 10px; height: 100%; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; }
 .timer-main .icon { color: var(--primary); }
-.t-label { max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--muted); }
-.timer.idle .t-label { font-size: 14px; font-weight: 700; color: var(--ink); }
-.t-time { font-family: var(--font-mono); font-size: 21px; font-weight: 500; letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
-.t-done { font-size: 13px; font-weight: 700; }
+.t-label { max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-xs); color: var(--muted); }
+.timer.idle .t-label { font-size: var(--text-sm); font-weight: 700; color: var(--ink); }
+.t-time { font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 500; letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
+.t-done { font-size: var(--text-xs); font-weight: 700; }
 .t-btn { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 999px; background: var(--primary-soft); color: var(--primary); cursor: pointer; }
 .t-btn .icon { width: 16px; height: 16px; }
 .t-bar { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--primary); transition: width 250ms linear; }
@@ -177,13 +183,13 @@ button, input, textarea { font: inherit; color: inherit; }
   position: absolute; right: 0; top: calc(100% + 10px); z-index: var(--z-popover);
   width: 280px; max-width: calc(100vw - 32px); padding: 14px; border-radius: 14px; flex-direction: column; align-items: stretch; gap: 12px;
 }
-.field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
-.field input, .custom input { height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); font-size: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; font-size: var(--text-xs); color: var(--muted); }
+.field input, .custom input { height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); font-size: var(--text-sm); }
 .presets, .custom, .actions { display: flex; flex-wrap: wrap; gap: 6px; }
 .custom input { width: 80px; }
-.chip-btn { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; font-size: 13px; font-weight: 700; }
+.chip-btn { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; font-size: var(--text-sm); font-weight: 700; }
 .chip-btn:hover { background: var(--hover); }
-.primary-btn { height: 34px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--primary); color: var(--panel); cursor: pointer; font-size: 14px; font-weight: 700; }
+.primary-btn { height: 34px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--primary); color: var(--panel); cursor: pointer; font-size: var(--text-sm); font-weight: 700; }
 .primary-btn:disabled { opacity: 0.45; cursor: default; }
 @media (prefers-reduced-motion: reduce) { .timer, .t-bar { transition: none; } }
 
@@ -196,7 +202,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .swatch.is-on { box-shadow: inset 0 0 0 1px var(--swatch-edge-use), 0 0 0 2px var(--panel), 0 0 0 4px var(--primary); }
 .stepper { display: flex; align-items: center; gap: 2px; }
 .stepper .icon-btn { width: 32px; height: 32px; }
-.step-value { --note-use: var(--panel); display: flex; align-items: center; gap: 7px; min-width: 22px; padding: 0 4px; font-family: var(--font-mono); font-size: 14px; font-weight: 600; }
+.step-value { --note-use: var(--panel); display: flex; align-items: center; gap: 7px; min-width: 22px; padding: 0 4px; font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 600; }
 .step-value .vote-sticker { margin-right: 0; }
 .selection-toolbar > .icon-btn { width: 34px; height: 34px; }
 .selection-toolbar .danger { color: var(--danger); }
@@ -206,18 +212,18 @@ button, input, textarea { font: inherit; color: inherit; }
 .empty-hint { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 22px; pointer-events: none; }
 .empty-note {
   width: 240px; height: 160px; display: grid; place-items: center; padding: 20px; text-align: center;
-  border: 2px dashed var(--hint-dash); border-radius: 3px 3px 14px 3px; font-size: 19px; font-weight: 700; line-height: 1.3;
+  border: 2px dashed var(--hint-dash); border-radius: 3px 3px 14px 3px; font-size: var(--text-lg); font-weight: 700; line-height: 1.3;
 }
-.keys { display: flex; gap: 14px; font-size: 13px; color: var(--muted); }
+.keys { display: flex; gap: 14px; font-size: var(--text-xs); color: var(--muted); }
 .keys kbd {
   margin-right: 5px; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px;
-  background: var(--panel); font-family: var(--font-mono); font-size: 12px; color: var(--ink);
+  background: var(--panel); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ink);
 }
-.starters { display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); pointer-events: auto; }
+.starters { display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: var(--text-xs); color: var(--muted); pointer-events: auto; }
 .starter-row { display: flex; gap: 10px; }
 .starter-btn {
   display: flex; flex-direction: column; align-items: center; gap: 6px; border: 0; border-radius: 10px;
-  background: var(--panel); box-shadow: var(--shadow-panel); padding: 9px 14px; font-size: 14px; font-weight: 700;
+  background: var(--panel); box-shadow: var(--shadow-panel); padding: 9px 14px; font-size: var(--text-sm); font-weight: 700;
   color: var(--ink); cursor: pointer; pointer-events: auto;
 }
 .starter-btn:hover { background: var(--hover); }
@@ -225,7 +231,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .starter-chip { width: 7px; height: 12px; border-radius: 2px; background: var(--chip-use); }
 .toast {
   position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%); z-index: var(--z-toast);
-  padding: 10px 16px; border-radius: 999px; background: var(--ink); color: var(--panel); font-size: 14px; font-weight: 500; box-shadow: var(--shadow-panel);
+  padding: 10px 16px; border-radius: 999px; background: var(--ink); color: var(--panel); font-size: var(--text-sm); font-weight: 500; box-shadow: var(--shadow-panel);
 }
 
 /* Narrow screens: stack chrome that would otherwise collide. */
@@ -242,7 +248,7 @@ button, input, textarea { font: inherit; color: inherit; }
 .present-btn {
   position: relative; height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 16px;
   border: 0; border-radius: 14px; background: var(--primary); color: var(--panel); box-shadow: var(--shadow-panel);
-  font-size: 15px; font-weight: 700; cursor: pointer; transition: background-color 150ms var(--ease-out);
+  font-size: var(--text-sm); font-weight: 700; cursor: pointer; transition: background-color 150ms var(--ease-out);
 }
 .present-btn:hover { background: var(--primary-hover); }
 .present-btn:hover .tip, .present-btn:focus-visible .tip { opacity: 1; visibility: visible; transition-delay: 400ms, 400ms; }
@@ -256,15 +262,15 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 .is-presenting .timer { height: 64px; padding: 0 10px 0 22px; gap: 14px; }
 .is-presenting .timer-main { gap: 14px; }
-.is-presenting .t-time { font-size: 38px; }
-.is-presenting .t-label { font-size: 16px; }
+.is-presenting .t-time { font-size: var(--text-display); }
+.is-presenting .t-label { font-size: var(--text-md); }
 .present-hint {
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: var(--z-chrome);
   height: 48px; padding: 0 6px; gap: 6px; border-radius: 999px;
 }
-.present-pos { min-width: 48px; text-align: center; font-family: var(--font-mono); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.hint-keys { padding: 0 8px; font-size: 13px; color: var(--muted); white-space: nowrap; }
-.exit-btn { height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: 14px; font-weight: 700; cursor: pointer; }
+.present-pos { min-width: 48px; text-align: center; font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 600; font-variant-numeric: tabular-nums; }
+.hint-keys { padding: 0 8px; font-size: var(--text-xs); color: var(--muted); white-space: nowrap; }
+.exit-btn { height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: var(--text-sm); font-weight: 700; cursor: pointer; }
 .exit-btn:hover { background: var(--exit-hover); }
 @media (max-width: 700px) { .hint-keys { display: none; } }
 @media (prefers-reduced-motion: reduce) { .present-btn, .chrome-hideable, .is-presenting .chrome-hideable { transition: none; } }
@@ -377,7 +383,7 @@ button, input, textarea { font: inherit; color: inherit; }
 
 /* Theme choice inside the board menu. */
 .menu-group { display: flex; flex-direction: column; border-top: 1px solid var(--line); margin-top: 4px; padding-top: 4px; }
-.menu-heading { padding: 4px 12px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.menu-heading { padding: 4px 12px; font-size: var(--text-xs); font-weight: 700; color: var(--muted); }
 .menu-item .check { margin-left: auto; color: var(--primary); }
 .menu-item { display: flex; align-items: center; gap: 8px; }
 
@@ -403,5 +409,5 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 
 /* The custom-minutes bound, stated rather than enforced silently. */
-.custom-hint { margin: -6px 0 0; font-size: 12px; color: var(--muted); }
+.custom-hint { margin: -6px 0 0; font-size: var(--text-xs); color: var(--muted); }
 .chip-btn:disabled { opacity: 0.45; cursor: default; }

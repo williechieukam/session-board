@@ -44,6 +44,20 @@ export function boundsOf(rects: Rect[]): Rect | null {
 }
 
 /** Number of rects whose centre lies inside `area` (left and top edges inclusive, right and bottom exclusive). */
+/**
+ * The rectangle a point falls inside, latest first.
+ *
+ * Zones carry no stacking order of their own, so the most recently added one wins where two
+ * overlap: that is the one drawn on top, and the one a person thinks they clicked into.
+ */
+export function areaAt<T extends Rect>(areas: T[], point: Point): T | null {
+  for (let i = areas.length - 1; i >= 0; i -= 1) {
+    const a = areas[i];
+    if (point.x >= a.x && point.x < a.x + a.width && point.y >= a.y && point.y < a.y + a.height) return a;
+  }
+  return null;
+}
+
 export function countCentresInside(rects: Rect[], area: Rect): number {
   let n = 0;
   for (const r of rects) {
